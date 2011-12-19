@@ -584,6 +584,7 @@ void CL_Sprite::set_play_pingpong(bool pingpong)
 void CL_Sprite::set_play_backward(bool backward)
 {
 	impl->play_backward = backward;
+	impl->delta_frame = impl->play_backward ? -1 : 1;
 }
 
 void CL_Sprite::set_show_on_finish(CL_Sprite::ShowOnFinish show_on_finish)
