@@ -654,15 +654,14 @@ void CL_OpenGLGraphicContextProvider::set_frame_buffer(const CL_FrameBuffer &dra
 
 	CL_OpenGL::set_active(this);
 
-	// Check for framebuffer completeness
-	// (Ideally this should be before rendering)
-	draw_buffer_provider->check_framebuffer_complete();
-	if (draw_buffer_provider != read_buffer_provider)
-		read_buffer_provider->check_framebuffer_complete();
-
 	draw_buffer_provider->bind_framebuffer(true);
 	if (draw_buffer_provider != read_buffer_provider)		// You cannot read and write to the same framebuffer
 		read_buffer_provider->bind_framebuffer(false);
+
+	// Check for framebuffer completeness
+	draw_buffer_provider->check_framebuffer_complete();
+	if (draw_buffer_provider != read_buffer_provider)
+		read_buffer_provider->check_framebuffer_complete();
 
 	// Save the map mode before when the framebuffer was bound
 	if (!framebuffer_bound)	
