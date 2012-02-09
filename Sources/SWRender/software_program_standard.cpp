@@ -34,7 +34,7 @@
 #include "Canvas/Commands/pixel_command_line.h"
 
 CL_SoftwareProgram_Standard::CL_SoftwareProgram_Standard()
-: modelview(CL_Mat4f::identity()), projection(CL_Mat4f::identity()), modelview_projection(CL_Mat4f::identity()), modelview_projection_invalid(false)
+: modelview(CL_Mat4f::identity())
 {
 }
 
@@ -81,8 +81,6 @@ void CL_SoftwareProgram_Standard::set_uniform_matrix(const CL_StringRef &name, c
 {
 	if (name == "cl_ModelView")
 		set_modelview(mat);
-	else if (name == "cl_Projection")
-		set_projection(mat);
 }
 
 CL_PixelCommand *CL_SoftwareProgram_Standard::draw_triangle(CL_PixelPipeline *pipeline, const std::vector<CL_Vec4f> &attribute_values)
@@ -115,23 +113,10 @@ CL_PixelCommand *CL_SoftwareProgram_Standard::draw_line(CL_PixelPipeline *pipeli
 void CL_SoftwareProgram_Standard::set_modelview(const CL_Mat4f &new_modelview)
 {
 	modelview = new_modelview;
-	modelview_projection_invalid = true;
-}
-
-void CL_SoftwareProgram_Standard::set_projection(const CL_Mat4f &new_projection)
-{
-	projection = new_projection;
-	modelview_projection_invalid = true;
 }
 
 CL_Vec2f CL_SoftwareProgram_Standard::transform(const CL_Vec4f &vertex) const
 {
-	if (modelview_projection_invalid)
-	{
-		modelview_projection = projection * modelview;
-		modelview_projection_invalid = false;
-	}
-
-	CL_Vec4f v = modelview_projection * vertex;
+	CL_Vec4f v = modelview * vertex;
 	return CL_Vec2f(v.x, v.y);
 }
