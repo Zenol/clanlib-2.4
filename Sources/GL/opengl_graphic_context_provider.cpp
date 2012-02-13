@@ -190,7 +190,6 @@ CL_OpenGLGraphicContextProvider::CL_OpenGLGraphicContextProvider(const CL_Render
 	if ( glsl_version_major > 1)
 			use_glsl_1_50 = true;
 
-
 	// Must write here, although CL_OpenGL::SetActive() updates it, because the version number is not available on the initial CL_OpenGL::SetActive() call
 	CL_OpenGL::opengl_version_major = opengl_version_major;
 	CL_OpenGL::opengl_version_minor = opengl_version_minor;
@@ -287,6 +286,20 @@ CL_OpenGLGraphicContextProvider::CL_OpenGLGraphicContextProvider(const CL_Render
 	standard_programs.push_back(sprite_program);
 
 	reset_program_object();
+
+
+	// Enable point sprites for legacy opengl
+	bool use_opengl_3_2 = false;
+	if ( opengl_version_major == 3)
+	{
+		if ( opengl_version_minor >= 2)
+			use_opengl_3_2 = true;
+	}
+	if ( opengl_version_major > 3)
+		use_opengl_3_2 = true;
+
+	if (!use_opengl_3_2)
+		glEnable(0x8861);	// GL_POINT_SPRITE
 }
 
 CL_OpenGLGraphicContextProvider::~CL_OpenGLGraphicContextProvider()
