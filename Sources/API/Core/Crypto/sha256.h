@@ -24,9 +24,10 @@
 **  File Author(s):
 **
 **    Magnus Norddahl
+**    Mark Page
 */
 
-/// \addtogroup clanCore_Math clanCore Math
+/// \addtogroup clanCore_Crypto clanCore Crypto
 /// \{
 
 #pragma once
@@ -35,32 +36,34 @@
 #include "../System/sharedptr.h"
 
 class CL_DataBuffer;
-class CL_SHA1_Impl;
+class CL_SHA256_Impl;
 
-/// \brief SHA-1 hash function class.
+/// \brief SHA-256 hash function class.
 ///
-/// \xmlonly !group=Core/Math! !header=core.h! \endxmlonly
-class CL_API_CORE CL_SHA1
+/// \xmlonly !group=Core/Crypto! !header=core.h! \endxmlonly
+class CL_API_CORE CL_SHA256
 {
 /// \name Construction
 /// \{
 
 public:
-	/// \brief Constructs a SHA-1 hash generator.
-	CL_SHA1();
+	/// \brief Constructs a SHA-256 hash generator.
+	CL_SHA256();
 
 /// \}
 /// \name Attributes
 /// \{
 
 public:
+	static const int hash_size = 32;
+
 	/// \brief Returns the calculated hash.
-	CL_String8 get_hash(bool uppercase = false);
+	CL_String8 get_hash(bool uppercase = false) const;
 
 	/// \brief Get hash
 	///
 	/// \param out_hash = where to write to
-	void get_hash(unsigned char out_hash[20]);
+	void get_hash(unsigned char out_hash[hash_size]) const;
 
 /// \}
 /// \name Operations
@@ -69,6 +72,14 @@ public:
 public:
 	/// \brief Resets the hash generator.
 	void reset();
+
+	/// \brief Enable a HMAC based calculation
+	///
+	/// Call this function before the initial add(). It is reset by reset()
+	///
+	/// \param key_data = The HMAC key
+	/// \param key_size = The size of the key_data
+	void set_hmac(const void *key_data, int key_size);
 
 	/// \brief Adds data to be hashed.
 	void add(const void *data, int size);
@@ -86,7 +97,7 @@ public:
 /// \{
 
 private:
-	CL_SharedPtr<CL_SHA1_Impl> impl;
+	CL_SharedPtr<CL_SHA256_Impl> impl;
 /// \}
 };
 
