@@ -230,7 +230,7 @@ void App::recursive_render(CL_GraphicContext &gc, const struct aiScene *sc, cons
 
 		std::vector<CL_Vec3f> normals;
 		std::vector<CL_Vec3f> vertices;
-		std::vector<CL_Vec3f> tex_coords;
+		std::vector<CL_Vec2f> tex_coords;
 
 		normals.reserve(mesh->mNumFaces * 3);
 		vertices.reserve(mesh->mNumFaces * 3);
@@ -252,10 +252,10 @@ void App::recursive_render(CL_GraphicContext &gc, const struct aiScene *sc, cons
 			for(i = 0; i < face->mNumIndices; i++)
 			{
 				int index = face->mIndices[i];
-				normals.push_back(&mesh->mNormals[index].x);
-				vertices.push_back( &mesh->mVertices[index].x);
+				normals.push_back(CL_Vec3f(&mesh->mNormals[index].x));
+				vertices.push_back( CL_Vec3f(&mesh->mVertices[index].x));
 				if (use_texture_coords)
-					tex_coords.push_back( &mesh->mTextureCoords[0][index].x);
+					tex_coords.push_back( CL_Vec2f(&mesh->mTextureCoords[0][index].x));
 			}
 		}
 

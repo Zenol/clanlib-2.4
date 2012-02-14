@@ -280,7 +280,7 @@ void App::update_light(CL_GraphicContext &gc, Options *options)
 	work_matrix.matrix[1+3*4] = 0.0f;
 	work_matrix.matrix[2+3*4] = 0.0f;
 
-	CL_Vec4f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
+	CL_Vec3f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
 
 	CL_Vec4f light_specular(options->distant_specular_color.r, options->distant_specular_color.g, options->distant_specular_color.b, options->distant_specular_color.a);
 	CL_Vec4f light_diffuse(options->distant_diffuse_color.r, options->distant_diffuse_color.g, options->distant_diffuse_color.b, options->distant_diffuse_color.a);
@@ -309,7 +309,7 @@ void App::update_spot_light(CL_GraphicContext &gc, Options *options)
 	temp_matrix.matrix[2+3*4] = 0.0f;
 
 	// Get direction
-	CL_Vec4f light_vector = temp_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
+	CL_Vec3f light_vector = temp_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
 
 	CL_Vec4f spot_light_specular(options->spot_specular_color.r, options->spot_specular_color.g, options->spot_specular_color.b, options->spot_specular_color.a);
 	CL_Vec4f spot_light_diffuse(options->spot_diffuse_color.r, options->spot_diffuse_color.g, options->spot_diffuse_color.b, options->spot_diffuse_color.a);

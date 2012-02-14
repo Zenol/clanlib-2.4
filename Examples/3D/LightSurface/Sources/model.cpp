@@ -182,8 +182,8 @@ void Model_Impl::insert_vbo(int vertex_count, const struct aiScene* sc, const st
 			for(i = 0; i < face->mNumIndices; i++)
 			{
 				int index = face->mIndices[i];
-				normals.push_back(&mesh->mNormals[index].x);
-				vertices.push_back( &mesh->mVertices[index].x);
+				normals.push_back(CL_Vec3f(&mesh->mNormals[index].x));
+				vertices.push_back( CL_Vec3f(&mesh->mVertices[index].x));
 			}
 		}
 

@@ -264,7 +264,7 @@ void App::update_light(CL_GraphicContext &gc, Options *options)
 	work_matrix.matrix[1+3*4] = 0.0f;
 	work_matrix.matrix[2+3*4] = 0.0f;
 
-	CL_Vec4f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
+	CL_Vec3f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
 
 	CL_Vec4f light_specular(options->light_specular_color.r, options->light_specular_color.g, options->light_specular_color.b, options->light_specular_color.a);
 	CL_Vec4f light_diffuse(options->light_diffuse_color.r, options->light_diffuse_color.g, options->light_diffuse_color.b, options->light_diffuse_color.a);

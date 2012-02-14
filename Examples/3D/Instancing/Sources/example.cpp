@@ -260,7 +260,7 @@ void App::update_light(CL_GraphicContext &gc)
 	work_matrix.matrix[1+3*4] = 0.0f;
 	work_matrix.matrix[2+3*4] = 0.0f;
 
-	CL_Vec4f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
+	CL_Vec3f light_vector = work_matrix.get_transformed_point(CL_Vec3f(0.0f, 0.0f, -1.0f));
 
 	CL_Vec4f light_specular(0.5f, 0.5f, 0.5f, 1.0f);
 	CL_Vec4f light_diffuse(0.5f, 0.5f, 0.5f, 1.0f);
