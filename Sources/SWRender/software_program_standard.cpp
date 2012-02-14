@@ -87,7 +87,7 @@ CL_PixelCommand *CL_SoftwareProgram_Standard::draw_triangle(CL_PixelPipeline *pi
 {
 	CL_Vec2f init_points[3] = { transform(attribute_values[0]), transform(attribute_values[1]), transform(attribute_values[2]) };
 	CL_Vec4f init_primcolor[3] = { attribute_values[3], attribute_values[4], attribute_values[5] };
-	CL_Vec2f init_texcoords[3] = { attribute_values[6], attribute_values[7], attribute_values[8] };
+	CL_Vec2f init_texcoords[3] = { CL_Vec2f(attribute_values[6]), CL_Vec2f(attribute_values[7]), CL_Vec2f(attribute_values[8]) };
 	int init_sampler = (int)attribute_values[9].x;
 	return new(pipeline) CL_PixelCommandTriangle(init_points, init_primcolor, init_texcoords, init_sampler);
 }
@@ -96,7 +96,7 @@ CL_PixelCommand *CL_SoftwareProgram_Standard::draw_sprite(CL_PixelPipeline *pipe
 {
 	CL_Vec2f init_points[3] = { transform(attribute_values[0]), transform(attribute_values[1]), transform(attribute_values[2]) };
 	CL_Vec4f init_primcolor[3] = { attribute_values[3], attribute_values[4], attribute_values[5] };
-	CL_Vec2f init_texcoords[3] = { attribute_values[6], attribute_values[7], attribute_values[8] };
+	CL_Vec2f init_texcoords[3] = { CL_Vec2f(attribute_values[6]), CL_Vec2f(attribute_values[7]), CL_Vec2f(attribute_values[8]) };
 	int init_sampler = (int)attribute_values[9].x;
 	return new(pipeline) CL_PixelCommandSprite(init_points, init_primcolor[0], init_texcoords, init_sampler);
 }
@@ -105,7 +105,7 @@ CL_PixelCommand *CL_SoftwareProgram_Standard::draw_line(CL_PixelPipeline *pipeli
 {
 	CL_Vec2f init_points[2] = { transform(attribute_values[0]), transform(attribute_values[1]) };
 	CL_Vec4f init_primcolor[2] = { attribute_values[2], attribute_values[3] };
-	CL_Vec2f init_texcoords[2] = { attribute_values[4], attribute_values[5] };
+	CL_Vec2f init_texcoords[2] = { CL_Vec2f(attribute_values[4]), CL_Vec2f(attribute_values[5]) };
 	int init_sampler = (int)attribute_values[6].x;
 	return new(pipeline) CL_PixelCommandLine(init_points, init_primcolor, init_texcoords, init_sampler);
 }
