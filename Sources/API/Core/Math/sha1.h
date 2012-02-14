@@ -57,12 +57,12 @@ public:
 	static const int hash_size = 20;
 
 	/// \brief Returns the calculated hash.
-	CL_String8 get_hash(bool uppercase = false) const;
+	CL_String8 get_hash(bool uppercase = false);
 
 	/// \brief Get hash
 	///
 	/// \param out_hash = where to write to
-	void get_hash(unsigned char out_hash[hash_size]) const;
+	void get_hash(unsigned char out_hash[hash_size]);
 
 /// \}
 /// \name Operations

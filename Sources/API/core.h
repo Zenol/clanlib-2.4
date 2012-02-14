@@ -204,7 +204,7 @@
 #include "Core/Math/hash_functions.h"
 #include "Core/Crypto/random.h"
 #include "Core/Crypto/secret.h"
-#include "Core/Crypto/sha1.h"
+#include "Core/Math/sha1.h"
 #include "Core/Crypto/md5.h"
 #include "Core/Crypto/sha224.h"
 #include "Core/Crypto/sha256.h"

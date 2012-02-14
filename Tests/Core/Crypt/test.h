@@ -72,7 +72,7 @@ private:
 	void test_md5();
 	void test_hash(const CL_MD5 &sha1, const char *hash_text);
 	void test_sha1();
-	void test_hash(const CL_SHA1 &sha1, const char *hash_text);
+	void test_hash(CL_SHA1 &sha1, const char *hash_text);
 	void test_sha224();
 	void test_hash(const CL_SHA224 &sha224, const char *hash_text);
 	void test_sha256();

@@ -27,7 +27,7 @@
 */
 
 #include "Core/precomp.h"
-#include "API/Core/Crypto/sha1.h"
+#include "API/Core/Math/sha1.h"
 #include "API/Core/System/databuffer.h"
 #include "sha1_impl.h"
 
@@ -42,12 +42,12 @@ CL_SHA1::CL_SHA1()
 /////////////////////////////////////////////////////////////////////////////
 // CL_SHA1 Attributes:
 
-CL_String8 CL_SHA1::get_hash(bool uppercase) const
+CL_String8 CL_SHA1::get_hash(bool uppercase)
 {
 	return impl->get_hash(uppercase);
 }
 
-void CL_SHA1::get_hash(unsigned char out_hash[20]) const
+void CL_SHA1::get_hash(unsigned char out_hash[20])
 {
 	impl->get_hash(out_hash);
 }

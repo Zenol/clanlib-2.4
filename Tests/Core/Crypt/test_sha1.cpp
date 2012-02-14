@@ -70,7 +70,7 @@ void TestApp::test_sha1()
 }
 
 
-void TestApp::test_hash(const CL_SHA1 &sha1, const char *hash_text)
+void TestApp::test_hash(CL_SHA1 &sha1, const char *hash_text)
 {
 	CL_String8 hash = sha1.get_hash(true);
 	if (hash != hash_text)

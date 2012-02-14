@@ -30,7 +30,7 @@
 #include "sha1_impl.h"
 
 #include "../../API/Core/Math/cl_math.h"
-#include "../../API/Core/Crypto/sha1.h"
+#include "../../API/Core/Math/sha1.h"
 
 #ifndef WIN32
 #include <cstring>

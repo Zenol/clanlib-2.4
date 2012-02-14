@@ -222,7 +222,7 @@ clanCore_includes = \
 	Core/Math/triangle_math.h \
 	Core/Crypto/secret.h \
 	Core/Crypto/random.h \
-	Core/Crypto/sha1.h \
+	Core/Math/sha1.h \
 	Core/Crypto/md5.h \
 	Core/Crypto/aes128_encrypt.h \
 	Core/Crypto/aes128_decrypt.h \
