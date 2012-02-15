@@ -55,6 +55,8 @@
 #include <unistd.h>
 #endif
 
+#include <cstring>
+
 class TestApp
 {
 public:

@@ -39,7 +39,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CL_AES128_Encrypt_Impl Construction:
 
-CL_AES128_Encrypt_Impl::CL_AES128_Encrypt_Impl() : initialisation_vector_set(false), cipher_key_set(false), padding_enabled(true), 	padding_pkcs7(true), padding_num_additional_padded_blocks(0)
+CL_AES128_Encrypt_Impl::CL_AES128_Encrypt_Impl() : initialisation_vector_set(false), cipher_key_set(false), padding_enabled(true), padding_pkcs7(true), padding_num_additional_padded_blocks(0)
 {
 	reset();
 }
