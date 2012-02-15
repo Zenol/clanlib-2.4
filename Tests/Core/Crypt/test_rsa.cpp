@@ -76,7 +76,7 @@ public:
 		CL_RSA::create_keypair(m_Random, m_private_exponent, m_public_exponent, m_modulus);
 	}
 
-	void set_crypt_key(CL_DataBuffer &public_key)
+	void set_crypt_key(const CL_DataBuffer &public_key)
 	{
 		m_WrappedCryptKey = public_key;
 		m_CryptKey = CL_RSA::decrypt(m_private_exponent, m_modulus, public_key);
