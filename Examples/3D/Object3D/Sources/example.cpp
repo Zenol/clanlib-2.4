@@ -215,7 +215,7 @@ void App::recursive_render(CL_GraphicContext &gc, const struct aiScene *sc, cons
 {
 	int i;
 	unsigned int n = 0, t;
-	struct aiMatrix4x4 m = nd->mTransformation;
+	aiMatrix4x4 m = nd->mTransformation;
 
 	// update transform
 	aiTransposeMatrix4(&m);
