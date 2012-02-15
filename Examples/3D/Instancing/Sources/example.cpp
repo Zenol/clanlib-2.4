@@ -72,7 +72,8 @@ int App::start(const std::vector<CL_String> &args)
 	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE,"assimp_log.txt");
 	//aiAttachLogStream(&stream);
 #endif
-	aiSetImportPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
+	aiPropertyStore* store = aiCreatePropertyStore();
+	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
 
 	// Connect the Window close event
 	CL_Slot slot_quit = window.sig_window_close().connect(this, &App::on_window_close);
@@ -139,6 +140,7 @@ int App::start(const std::vector<CL_String> &args)
 		// This call processes user input and other events
 		CL_KeepAlive::process();
 	}
+	aiReleasePropertyStore(store);
 	aiDetachAllLogStreams();
 	return 0;
 }

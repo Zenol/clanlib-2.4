@@ -118,7 +118,8 @@ int App::start(const std::vector<CL_String> &args)
 
 	// Create the objects
 
-	aiSetImportPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
+	aiPropertyStore* store = aiCreatePropertyStore();
+	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
 
 	const struct aiScene* scene_teapot = aiImportFile("../Clan3D/Resources/teapot.dae",aiProcessPreset_TargetRealtime_MaxQuality);
 	if (!scene_teapot)
@@ -204,6 +205,7 @@ int App::start(const std::vector<CL_String> &args)
 	aiReleaseImport(scene_tuxball);
 	aiReleaseImport(scene_clanlib);
 	aiReleaseImport(scene_teapot);
+	aiReleasePropertyStore(store);
 	aiDetachAllLogStreams();
 
 	return 0;
