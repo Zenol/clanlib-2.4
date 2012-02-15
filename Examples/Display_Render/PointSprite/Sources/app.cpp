@@ -32,7 +32,7 @@
 #include <cstdlib>
 
 const char text_shader_vertex[] =
-//	"#version 140\n"
+	"#version 120\n"
 	"\n"
 	"attribute vec3 InPosition;"
 	"attribute vec4 InColor;\n"
@@ -49,7 +49,7 @@ const char text_shader_vertex[] =
 	;
 
 const char text_shader_fragment[] =
-//	"#version 140\n"
+	"#version 120\n"
 	"\n"
 	"uniform sampler2D Texture0;\n"
 	"varying vec4 Color;\n"
