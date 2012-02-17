@@ -66,16 +66,6 @@ int App::start(const std::vector<CL_String> &args)
 
 	CL_DisplayWindow window(desc);
 
-#ifdef _DEBUG
-	//struct aiLogStream stream;
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT,NULL);
-	//aiAttachLogStream(&stream);
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE,"assimp_log.txt");
-	//aiAttachLogStream(&stream);
-#endif
-	aiPropertyStore* store = aiCreatePropertyStore();
-	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
-
 	// Connect the Window close event
 	CL_Slot slot_quit = window.sig_window_close().connect(this, &App::on_window_close);
 
@@ -193,8 +183,7 @@ int App::start(const std::vector<CL_String> &args)
 
 		CL_KeepAlive::process();
 	}
-	aiReleasePropertyStore(store);
-	aiDetachAllLogStreams();
+
 	return 0;
 }
 
@@ -241,10 +230,10 @@ void App::render(CL_GraphicContext &gc)
 void App::create_scene(CL_GraphicContext &gc)
 {
 
-	model_teapot = Model(gc, "../Clan3D/Resources/teapot.dae");
-	Model model_ring_a(gc, "Resources/ring.dae");
-	Model model_ring_b(gc, "Resources/ring.dae");
-	Model model_ring_c(gc, "Resources/ring.dae");
+	model_teapot = Model(gc, scene.gs, "../Clan3D/Resources/teapot.dae");
+	Model model_ring_a(gc, scene.gs, "Resources/ring.dae");
+	Model model_ring_b(gc, scene.gs, "Resources/ring.dae");
+	Model model_ring_c(gc, scene.gs, "Resources/ring.dae");
 
 	camera = new SceneObject(scene, scene.base);
 	camera->position = CL_Vec3f(0.0f, 18.0f, -25.0f);

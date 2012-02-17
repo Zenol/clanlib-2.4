@@ -35,7 +35,7 @@ class Model_Impl
 public:
 	Model_Impl();
 
-	void Load(CL_GraphicContext &gc, const char *filename, bool generate_texture_coords);
+	void Load(CL_GraphicContext &gc, GraphicStore *gs, const char *filename, bool generate_texture_coords);
 
 	void Draw(CL_GraphicContext &gc, GraphicStore *gs, const CL_Mat4f &modelview_matrix);
 	void SetMaterial(float new_material_shininess, const CL_Vec4f &new_material_emission, const CL_Vec4f &new_material_ambient, const CL_Vec4f &new_material_specular);
@@ -61,9 +61,9 @@ Model::Model()
 {
 }
 
-Model::Model(CL_GraphicContext &gc, const char *filename, bool generate_texture_coords): impl(new Model_Impl())
+Model::Model(CL_GraphicContext &gc, GraphicStore *gs, const char *filename, bool generate_texture_coords): impl(new Model_Impl())
 {
-	impl->Load(gc, filename, generate_texture_coords);
+	impl->Load(gc, gs, filename, generate_texture_coords);
 }
 
 bool Model::is_null()
@@ -98,10 +98,10 @@ void Model_Impl::SetMaterial(float new_material_shininess, const CL_Vec4f &new_m
 	material_specular = new_material_specular;
 }
 
-void Model_Impl::Load(CL_GraphicContext &gc, const char *filename, bool generate_texture_coords)
+void Model_Impl::Load(CL_GraphicContext &gc, GraphicStore *gs, const char *filename, bool generate_texture_coords)
 {
 
-	const struct aiScene* scene = aiImportFile(filename,aiProcessPreset_TargetRealtime_MaxQuality);
+	const struct aiScene* scene = aiImportFileExWithProperties(filename,aiProcessPreset_TargetRealtime_MaxQuality, NULL, gs->store);
 	if (!scene)
 		throw CL_Exception("Cannot load a model");
 

@@ -121,15 +121,15 @@ int App::start(const std::vector<CL_String> &args)
 	aiPropertyStore* store = aiCreatePropertyStore();
 	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
 
-	const struct aiScene* scene_teapot = aiImportFile("../Clan3D/Resources/teapot.dae",aiProcessPreset_TargetRealtime_MaxQuality);
+	const struct aiScene* scene_teapot = aiImportFileExWithProperties("../Clan3D/Resources/teapot.dae",aiProcessPreset_TargetRealtime_MaxQuality, NULL, store);
 	if (!scene_teapot)
 		throw CL_Exception("Cannot load the teapot model");
 
-	const struct aiScene* scene_clanlib = aiImportFile("../Clan3D/Resources/clanlib.dae",aiProcessPreset_TargetRealtime_MaxQuality);
+	const struct aiScene* scene_clanlib = aiImportFileExWithProperties("../Clan3D/Resources/clanlib.dae",aiProcessPreset_TargetRealtime_MaxQuality, NULL, store);
 	if (!scene_clanlib)
 		throw CL_Exception("Cannot load the clanlib model");
 
-	const struct aiScene* scene_tuxball = aiImportFile("../Clan3D/Resources/tux_ball.dae",aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
+	const struct aiScene* scene_tuxball = aiImportFileExWithProperties("../Clan3D/Resources/tux_ball.dae",aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs, NULL, store);
 	if (!scene_tuxball)
 		throw CL_Exception("Cannot load the tux ball model");
 

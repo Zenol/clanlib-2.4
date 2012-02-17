@@ -65,16 +65,6 @@ int App::start(const std::vector<CL_String> &args)
 
 	CL_DisplayWindow window(desc);
 
-#ifdef _DEBUG
-	//struct aiLogStream stream;
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT,NULL);
-	//aiAttachLogStream(&stream);
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE,"assimp_log.txt");
-	//aiAttachLogStream(&stream);
-#endif
-	aiPropertyStore* store = aiCreatePropertyStore();
-	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
-
 	// Connect the Window close event
 	CL_Slot slot_quit = window.sig_window_close().connect(this, &App::on_window_close);
 
@@ -144,8 +134,7 @@ int App::start(const std::vector<CL_String> &args)
 		// This call processes user input and other events
 		CL_KeepAlive::process();
 	}
-	aiReleasePropertyStore(store);
-	aiDetachAllLogStreams();
+
 	return 0;
 }
 
@@ -230,10 +219,10 @@ void App::render_from_camera(CL_GraphicContext &gc, CL_FrameBuffer &framebuffer)
 
 void App::create_scene(CL_GraphicContext &gc)
 {
-	Model model_teapot(gc, "../Clan3D/Resources/teapot.dae", true);
-	Model model_landscape(gc, "Resources/land.dae", false);
-	Model model_tree(gc, "Resources/tree.dae", false);
-	Model model_gear(gc, "../Clan3D/Resources/gear.dae", false);
+	Model model_teapot(gc, scene.gs, "../Clan3D/Resources/teapot.dae", true);
+	Model model_landscape(gc, scene.gs, "Resources/land.dae", false);
+	Model model_tree(gc, scene.gs, "Resources/tree.dae", false);
+	Model model_gear(gc, scene.gs, "../Clan3D/Resources/gear.dae", false);
 
 	model_teapot.SetMaterial(
 		32.0f,	// shininess

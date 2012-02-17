@@ -66,16 +66,6 @@ int App::start(const std::vector<CL_String> &args)
 
 	CL_DisplayWindow window(desc);
 
-#ifdef _DEBUG
-	//struct aiLogStream stream;
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT,NULL);
-	//aiAttachLogStream(&stream);
-	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE,"assimp_log.txt");
-	//aiAttachLogStream(&stream);
-#endif
-	aiPropertyStore* store = aiCreatePropertyStore();
-	aiSetImportPropertyFloat(store, AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,89.53f);
-
 	// Connect the Window close event
 	CL_Slot slot_quit = window.sig_window_close().connect(this, &App::on_window_close);
 
@@ -171,8 +161,6 @@ int App::start(const std::vector<CL_String> &args)
 		// This call processes user input and other events
 		CL_KeepAlive::process();
 	}
-	aiReleasePropertyStore(store);
-	aiDetachAllLogStreams();
 
 	return 0;
 }
@@ -218,15 +206,15 @@ void App::render(CL_GraphicContext &gc)
 
 void App::create_scene(CL_GraphicContext &gc)
 {
-	Model model_landscape(gc, "../Shadow/Resources/land.dae", false);
+	Model model_landscape(gc, scene.gs, "../Shadow/Resources/land.dae", false);
 	model_landscape.SetMaterial(64.0f,	// Shiny
 			CL_Vec4f(0.0f, 0.0f, 0.0f, 1.0f),	// Emission
 			CL_Vec4f(1.0f, 1.0f, 1.0f, 1.0f),	// Ambient
 			CL_Vec4f(0.0f, 0.0f, 0.0f, 1.0f));	// Specular
 
-	Model model_cone(gc, "Resources/cone.dae", true);
+	Model model_cone(gc, scene.gs, "Resources/cone.dae", true);
 
-	Model model_teapot(gc, "../Clan3D/Resources/teapot.dae", true);
+	Model model_teapot(gc, scene.gs, "../Clan3D/Resources/teapot.dae", true);
 	model_teapot.SetMaterial(64.0f,	// Shiny
 			CL_Vec4f(0.0f, 0.0f, 0.0f, 1.0f),	// Emission
 			CL_Vec4f(1.0f, 1.0f, 1.0f, 1.0f),	// Ambient
