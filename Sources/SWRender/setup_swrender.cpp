@@ -42,6 +42,11 @@ static CL_SWRenderTarget *cl_gdi_target = 0;
 
 CL_SetupSWRender::CL_SetupSWRender()
 {
+	if (!CL_System::detect_cpu_extension(CL_System::sse2))
+	{
+		throw CL_Exception("Sorry, clanSWRender requires a processor capable of SSE2 instructions. (Update your CPU)");
+	}
+
 	CL_MutexSection mutex_lock(&cl_gdi_mutex);
 	if (cl_gdi_refcount == 0)
 		cl_gdi_target = new CL_SWRenderTarget();
