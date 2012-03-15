@@ -53,6 +53,7 @@
 #include "../Window/input_context_impl.h"
 #include <X11/XKBlib.h>
 #include <dlfcn.h>
+#include <unistd.h>
 
 #ifndef MWM_HINTS_FUNCTIONS
 /* bit definitions for MwmHints.flags */
