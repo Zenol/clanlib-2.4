@@ -127,16 +127,13 @@ public:
 	void hide();
 	void bring_to_front();
 	void capture_mouse(bool capture);
-	void get_message(CL_X11Window *mouse_capture_window);
-	bool has_messages();
+	void process_message(XEvent &event, CL_X11Window *mouse_capture_window);
+	void process_message_complete();
 	void request_repaint(const CL_Rect &rect);
 	void set_clipboard_text(const CL_StringRef &text);
 	void set_clipboard_image(const CL_PixelBuffer &buf);
-	bool get_xevent( XEvent &event ) const;
-	bool get_xevent( XEvent &event, int event_type ) const;
 	void get_keyboard_modifiers(bool &key_shift, bool &key_alt, bool &key_ctrl) const;
 	CL_Point get_mouse_position() const;
-	void open_screen();
 
 	// The library will be opened / closed by this class
 	// Returns 0 if the library could not be found
@@ -225,6 +222,8 @@ private:
 	bool always_send_window_position_changed_event;
 	bool always_send_window_size_changed_event;
 
+	std::vector<CL_Rect> exposed_rects;
+	CL_Rect largest_exposed_rect;
 /// \}
 };
 

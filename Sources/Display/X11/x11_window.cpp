@@ -118,6 +118,8 @@ CL_X11Window::CL_X11Window()
   always_send_window_position_changed_event(false), always_send_window_size_changed_event(false)
 
 {
+	display = CL_DisplayMessageQueue_X11::message_queue.get_display();
+
 	last_repaint_rect.reserve(32);
 	keyboard = CL_InputDevice(new CL_InputDeviceProvider_X11Keyboard(this));
 	mouse = CL_InputDevice(new CL_InputDeviceProvider_X11Mouse(this));
@@ -140,12 +142,6 @@ CL_X11Window::~CL_X11Window()
 
 	close_window();
 
-	if (display)
-	{
-		XCloseDisplay(display);
-		display = 0;
-	}
-
 	// This MUST be called after XCloseDisplay - It is used for http://www.xfree86.org/4.8.0/DRI11.html
 	if (dlopen_lib_handle)
 	{
@@ -154,21 +150,10 @@ CL_X11Window::~CL_X11Window()
 
 }
 
-void CL_X11Window::open_screen()
-{
-	if (!display)
-	{
-		display = XOpenDisplay(NULL);
-		if (!display)
-			throw CL_Exception("Could not open X11 display!");
-	}
-}
-
 void CL_X11Window::create(XVisualInfo *visual, CL_DisplayWindowSite *new_site, const CL_DisplayWindowDescription &desc)
 {
 	site = new_site;
 
-	open_screen();
 	close_window();		// Reset all variables
 	
 	current_screen = visual->screen;
@@ -230,11 +215,6 @@ void CL_X11Window::create(XVisualInfo *visual, CL_DisplayWindowSite *new_site, c
 		throw CL_Exception("Cannot allocate X11 XSizeHints structure");
 
 	system_cursor = XCreateFontCursor(display, XC_left_ptr);	// This is allowed to fail
-
-	CL_SocketMessage_X11 screen_connection;
-	screen_connection.type = CL_EventProvider::type_fd_read;
-	screen_connection.handle = ConnectionNumber(display);
-	current_window_events.push_back(screen_connection);
 
 	int win_x = desc.get_position().left;
 	int win_y = desc.get_position().top;
@@ -912,8 +892,8 @@ void CL_X11Window::map_window()
 		{
 			XEvent event;
 			do {
-				XMaskEvent(display, StructureNotifyMask, &event);
-			}while ( (event.type != MapNotify) || (event.xmap.event != window) );
+				XWindowEvent(display, window, StructureNotifyMask, &event);
+			}while ( event.type != MapNotify );
 
 			is_window_mapped = true;
 
@@ -956,8 +936,8 @@ void CL_X11Window::unmap_window()
 		{
 			XEvent event;
 			do {
-				XMaskEvent(display, StructureNotifyMask, &event);
-			}while ( (event.type != UnmapNotify) || (event.xmap.event != window) );
+				XWindowEvent(display, window, StructureNotifyMask, &event);
+			}while (event.type != UnmapNotify);
 
 			is_window_mapped = false;
 		}
@@ -1110,271 +1090,268 @@ CL_Rect CL_X11Window::get_screen_position() const
 //	return CL_Rect(newx, newy, CL_Size(width, height));
 //}
 
-void CL_X11Window::get_message(CL_X11Window *mouse_capture_window)
+void CL_X11Window::process_message(XEvent &event, CL_X11Window *mouse_capture_window)
 {
-	XEvent event;
 
-	std::vector<CL_Rect> exposed_rects;
-	CL_Rect largest_exposed_rect;
 	CL_Rect rect;
 
-	ic.poll(false);		// Check input devices
-	// Dispatch all Xlib events
-	while (get_xevent(event))
+	bool process_input_context = false;
+	switch(event.type)
 	{
-		bool process_input_context = false;
-		switch(event.type)
+		//Resize or Move
+		case ConfigureNotify:
 		{
-			//Resize or Move
-			case ConfigureNotify:
+			// From http://tronche.com/gui/x/icccm/sec-4.html
+			// (A client will receive a synthetic ConfigureNotify event that describes the (unchanged) geometry of the window)
+			// (The client will not receive a real ConfigureNotify event because no change has actually taken place.)
+
+			rect = current_window_client_area;
+			if (event.xany.send_event != 0)
 			{
-				// From http://tronche.com/gui/x/icccm/sec-4.html
-				// (A client will receive a synthetic ConfigureNotify event that describes the (unchanged) geometry of the window)
-				// (The client will not receive a real ConfigureNotify event because no change has actually taken place.)
-
-				rect = current_window_client_area;
-				if (event.xany.send_event != 0)
-				{
-					int bw = event.xconfigure.border_width;
-					current_window_client_area = CL_Rect( 
-						event.xconfigure.x + bw,
-						event.xconfigure.y + bw,
-						event.xconfigure.x + bw + event.xconfigure.width,
-						event.xconfigure.y + bw + event.xconfigure.height
-					);
-				}
-				else
-				{
-					current_window_client_area = get_screen_position();
-				}
-
-				requested_current_window_client_area = current_window_client_area;
-
-				if (site)
-				{
-					if ( (rect.left != current_window_client_area.left) || (rect.top != current_window_client_area.top) || always_send_window_position_changed_event )
-					{
-						always_send_window_position_changed_event = false;
-						site->sig_window_moved->invoke();
-					}
-
-					if ( (rect.get_width() != current_window_client_area.get_width()) || (rect.get_height() != current_window_client_area.get_height()) || always_send_window_size_changed_event )
-					{
-						always_send_window_size_changed_event = false;
-						if (!site->func_window_resize->is_null())
-						{
-							site->func_window_resize->invoke(rect);
-							// TODO: If rect output is different, update this window rect. Maybe use a  XConfigureRequestEvent?
-						}
-
-						if (!callback_on_resized.is_null())
-							callback_on_resized.invoke();
-
-						site->sig_resize->invoke(rect.get_width(), rect.get_height());
-					}
-				}
-	
-				break;
+				int bw = event.xconfigure.border_width;
+				current_window_client_area = CL_Rect( 
+					event.xconfigure.x + bw,
+					event.xconfigure.y + bw,
+					event.xconfigure.x + bw + event.xconfigure.width,
+					event.xconfigure.y + bw + event.xconfigure.height
+				);
 			}
-			case ClientMessage:
-				// handle window manager messages
-				if (wm_protocols)
-				{
-					if (event.xclient.message_type == wm_protocols)
-					{
-						if (wm_delete_window)
-						{
-							if (event.xclient.data.l[0] == wm_delete_window)
-							{
-								if (site)
-									site->sig_window_close->invoke();
-							}
-						}
-						if (net_wm_ping)
-						{
-							if (event.xclient.data.l[0] == net_wm_ping)
-							{
-								XSendEvent( display, RootWindow(display, current_screen), False, SubstructureNotifyMask | SubstructureRedirectMask, &event );
-							}
-						}
-					}
-				}
-				break;
-			case Expose:
-				// Repaint notification
-				if (!site)
-					break;
+			else
+			{
+				current_window_client_area = get_screen_position();
+			}
 
-				if (exposed_rects.empty())	// First call, reserve some additional memory as required
+			requested_current_window_client_area = current_window_client_area;
+
+			if (site)
+			{
+				if ( (rect.left != current_window_client_area.left) || (rect.top != current_window_client_area.top) || always_send_window_position_changed_event )
 				{
-					unsigned int num_exposed = event.xexpose.count;
-					exposed_rects.reserve(max_allowable_expose_events);
+					always_send_window_position_changed_event = false;
+					site->sig_window_moved->invoke();
 				}
 
-				if (exposed_rects.size() < max_allowable_expose_events)
+				if ( (rect.get_width() != current_window_client_area.get_width()) || (rect.get_height() != current_window_client_area.get_height()) || always_send_window_size_changed_event )
 				{
-					rect = CL_Rect(event.xexpose.x, event.xexpose.y, 
-						event.xexpose.x + event.xexpose.width, event.xexpose.y + event.xexpose.height);
-
-					exposed_rects.push_back(rect);
-
-					// For optimisation later on, calculate the largest exposed rect
-					if ((largest_exposed_rect.get_width() * largest_exposed_rect.get_height()) < (rect.get_width() * rect.get_height()))
+					always_send_window_size_changed_event = false;
+					if (!site->func_window_resize->is_null())
 					{
-						largest_exposed_rect = rect;
-					}
-				}
-				break;
-			case FocusIn:
-				if (site)
-					site->sig_got_focus->invoke();
-
-				break;
-			case FocusOut:
-				if (site)
-				{
-					if (!has_focus())	// For an unknown reason, FocusOut is called when clicking on title bar of window
-					{
-						site->sig_lost_focus->invoke();
-					}
-				}
-				break;
-			case PropertyNotify:
-				if (net_wm_state != None)
-				{
-					if (event.xproperty.atom == net_wm_state && event.xproperty.state == PropertyNewValue)
-					{
-						if (is_minimized())
-						{
-							if (!minimized && site != NULL)
-								site->sig_window_minimized->invoke();
-							minimized = true;
-							maximized = false;
-						}
-						else if (is_maximized())
-						{
-							if (!maximized && site != NULL)
-								site->sig_window_maximized->invoke();
-							if (minimized && site != NULL)
-							{
-								// generate resize events for minimized -> maximized transition
-								CL_Rect rect = get_geometry();
-								site->sig_window_moved->invoke();
-								if (!site->func_window_resize->is_null())
-									site->func_window_resize->invoke(rect);
-								if (!callback_on_resized.is_null())
-									callback_on_resized.invoke();
-								site->sig_resize->invoke(rect.get_width(), rect.get_height());
-							}
-							minimized = false;
-							maximized = true;
-						}
-						else
-						{
-							if ((minimized || maximized) && site != NULL)
-								site->sig_window_restored->invoke();
-							minimized = false;
-							maximized = false;
-						}
-					}
-				}
-				else
-				{
-					if (event.xproperty.atom == wm_state && event.xproperty.state == PropertyNewValue)
-					{
-						if (is_minimized())
-						{
-							if (!minimized && site != NULL)
-								site->sig_window_minimized->invoke();
-							minimized = true;
-						}
-						else
-						{
-							if (minimized && site != NULL)
-								site->sig_window_restored->invoke();
-							minimized = false;
-						}
-					}
-				}
-				break;
-			case KeyRelease:
-			case KeyPress:
-				if (get_keyboard())
-				{
-					get_keyboard()->received_keyboard_input(event.xkey);
-					process_input_context = true;
-				}
-				break;
-			case ButtonPress:
-			case ButtonRelease:
-				if (mouse_capture_window->get_mouse() && event.xany.send_event==0)
-				{
-					if (!callback_on_clicked.is_null())
-					{
-						// This callback is required for GL layered windows
-						if (!callback_on_clicked.invoke(event.xbutton))
-							break;
+						site->func_window_resize->invoke(rect);
+						// TODO: If rect output is different, update this window rect. Maybe use a  XConfigureRequestEvent?
 					}
 
-					// Adjust to what clanlib client expects
-					event.xmotion.x = event.xmotion.x_root - requested_current_window_client_area.left;
-					event.xmotion.y = event.xmotion.y_root - requested_current_window_client_area.top;
+					if (!callback_on_resized.is_null())
+						callback_on_resized.invoke();
 
-					if (this != mouse_capture_window)
-					{
-						CL_Rect this_scr = current_window_client_area;
-						CL_Rect capture_scr = mouse_capture_window->current_window_client_area;
+					site->sig_resize->invoke(rect.get_width(), rect.get_height());
+				}
+			}
 	
-						event.xbutton.x += this_scr.left - capture_scr.left;
-						event.xbutton.y += this_scr.top - capture_scr.top;
-					}
-					
-					mouse_capture_window->get_mouse()->received_mouse_input(event.xbutton);
-					process_input_context = true;
-				}
-				break;
-			case MotionNotify:
-				if (mouse_capture_window->get_mouse() && event.xany.send_event==0)
-				{
-					// Adjust to what clanlib client expects
-					event.xmotion.x = event.xmotion.x_root - requested_current_window_client_area.left;
-					event.xmotion.y = event.xmotion.y_root - requested_current_window_client_area.top;
-					if (this != mouse_capture_window)
-					{
-						CL_Rect this_scr = current_window_client_area;
-						CL_Rect capture_scr = mouse_capture_window->current_window_client_area;
-	
-						event.xmotion.x += this_scr.left - capture_scr.left;
-						event.xmotion.y += this_scr.top - capture_scr.top;
-					}
-
-					mouse_capture_window->get_mouse()->received_mouse_move(event.xmotion);
-					process_input_context = true;
-				}
-
-				break;
-
-			case SelectionClear:	// New clipboard selection owner
-				clipboard.event_selection_clear(event.xselectionclear);
-				break;
-			case SelectionNotify:
-				clipboard.event_selection_notify();
-				break;
-			case SelectionRequest:	// Clipboard requests
-				clipboard.event_selection_request(event.xselectionrequest);
-				break;
-		default:
 			break;
 		}
+		case ClientMessage:
+			// handle window manager messages
+			if (wm_protocols)
+			{
+				if (event.xclient.message_type == wm_protocols)
+				{
+					if (wm_delete_window)
+					{
+						if (event.xclient.data.l[0] == wm_delete_window)
+						{
+							if (site)
+								site->sig_window_close->invoke();
+						}
+					}
+					if (net_wm_ping)
+					{
+						if (event.xclient.data.l[0] == net_wm_ping)
+						{
+							XSendEvent( display, RootWindow(display, current_screen), False, SubstructureNotifyMask | SubstructureRedirectMask, &event );
+						}
+					}
+				}
+			}
+			break;
+		case Expose:
+			// Repaint notification
+			if (!site)
+				break;
 
-		if (process_input_context)
-		{
-			// Immediately dispatch any messages queued (to ensure any later event is adjusted for window geometry or cursor changes)
-			ic.process_messages();
-			if (ic.is_disposed())
-				return;		// Disposed, thefore "this" is invalid, must exit now
-		}
+			if (exposed_rects.empty())	// First call, reserve some additional memory as required
+			{
+				unsigned int num_exposed = event.xexpose.count;
+				exposed_rects.reserve(max_allowable_expose_events);
+			}
+
+			if (exposed_rects.size() < max_allowable_expose_events)
+			{
+				rect = CL_Rect(event.xexpose.x, event.xexpose.y, 
+					event.xexpose.x + event.xexpose.width, event.xexpose.y + event.xexpose.height);
+
+				exposed_rects.push_back(rect);
+
+				// For optimisation later on, calculate the largest exposed rect
+				if ((largest_exposed_rect.get_width() * largest_exposed_rect.get_height()) < (rect.get_width() * rect.get_height()))
+				{
+					largest_exposed_rect = rect;
+				}
+			}
+			break;
+		case FocusIn:
+			if (site)
+				site->sig_got_focus->invoke();
+
+			break;
+		case FocusOut:
+			if (site)
+			{
+				if (!has_focus())	// For an unknown reason, FocusOut is called when clicking on title bar of window
+				{
+					site->sig_lost_focus->invoke();
+				}
+			}
+			break;
+		case PropertyNotify:
+			if (net_wm_state != None)
+			{
+				if (event.xproperty.atom == net_wm_state && event.xproperty.state == PropertyNewValue)
+				{
+					if (is_minimized())
+					{
+						if (!minimized && site != NULL)
+							site->sig_window_minimized->invoke();
+						minimized = true;
+						maximized = false;
+					}
+					else if (is_maximized())
+					{
+						if (!maximized && site != NULL)
+							site->sig_window_maximized->invoke();
+						if (minimized && site != NULL)
+						{
+							// generate resize events for minimized -> maximized transition
+							CL_Rect rect = get_geometry();
+							site->sig_window_moved->invoke();
+							if (!site->func_window_resize->is_null())
+								site->func_window_resize->invoke(rect);
+							if (!callback_on_resized.is_null())
+								callback_on_resized.invoke();
+							site->sig_resize->invoke(rect.get_width(), rect.get_height());
+						}
+						minimized = false;
+						maximized = true;
+					}
+					else
+					{
+						if ((minimized || maximized) && site != NULL)
+							site->sig_window_restored->invoke();
+						minimized = false;
+						maximized = false;
+					}
+				}
+			}
+			else
+			{
+				if (event.xproperty.atom == wm_state && event.xproperty.state == PropertyNewValue)
+				{
+					if (is_minimized())
+					{
+						if (!minimized && site != NULL)
+							site->sig_window_minimized->invoke();
+						minimized = true;
+					}
+					else
+					{
+						if (minimized && site != NULL)
+							site->sig_window_restored->invoke();
+						minimized = false;
+					}
+				}
+			}
+			break;
+		case KeyRelease:
+		case KeyPress:
+			if (get_keyboard())
+			{
+				get_keyboard()->received_keyboard_input(event.xkey);
+				process_input_context = true;
+			}
+			break;
+		case ButtonPress:
+		case ButtonRelease:
+			if (mouse_capture_window->get_mouse() && event.xany.send_event==0)
+			{
+				if (!callback_on_clicked.is_null())
+				{
+					// This callback is required for GL layered windows
+					if (!callback_on_clicked.invoke(event.xbutton))
+						break;
+				}
+
+				// Adjust to what clanlib client expects
+				event.xmotion.x = event.xmotion.x_root - requested_current_window_client_area.left;
+				event.xmotion.y = event.xmotion.y_root - requested_current_window_client_area.top;
+
+				if (this != mouse_capture_window)
+				{
+					CL_Rect this_scr = current_window_client_area;
+					CL_Rect capture_scr = mouse_capture_window->current_window_client_area;
+	
+					event.xbutton.x += this_scr.left - capture_scr.left;
+					event.xbutton.y += this_scr.top - capture_scr.top;
+				}
+					
+				mouse_capture_window->get_mouse()->received_mouse_input(event.xbutton);
+				process_input_context = true;
+			}
+			break;
+		case MotionNotify:
+			if (mouse_capture_window->get_mouse() && event.xany.send_event==0)
+			{
+				// Adjust to what clanlib client expects
+				event.xmotion.x = event.xmotion.x_root - requested_current_window_client_area.left;
+				event.xmotion.y = event.xmotion.y_root - requested_current_window_client_area.top;
+				if (this != mouse_capture_window)
+				{
+					CL_Rect this_scr = current_window_client_area;
+					CL_Rect capture_scr = mouse_capture_window->current_window_client_area;
+	
+					event.xmotion.x += this_scr.left - capture_scr.left;
+					event.xmotion.y += this_scr.top - capture_scr.top;
+				}
+
+				mouse_capture_window->get_mouse()->received_mouse_move(event.xmotion);
+				process_input_context = true;
+			}
+
+			break;
+
+		case SelectionClear:	// New clipboard selection owner
+			clipboard.event_selection_clear(event.xselectionclear);
+			break;
+		case SelectionNotify:
+			clipboard.event_selection_notify();
+			break;
+		case SelectionRequest:	// Clipboard requests
+			clipboard.event_selection_request(event.xselectionrequest);
+			break;
+	default:
+		break;
 	}
+
+	if (process_input_context)
+	{
+		// Immediately dispatch any messages queued (to ensure any later event is adjusted for window geometry or cursor changes)
+		ic.process_messages();
+		if (ic.is_disposed())
+			return;		// Disposed, thefore "this" is invalid, must exit now
+	}
+
+}
+void CL_X11Window::process_message_complete()
+{
+	ic.poll(false);		// Check input devices	-- TODO: Is this required
 
 	// Send any exposure events, unless they have already been sent
 	unsigned int max = exposed_rects.size();
@@ -1419,24 +1396,8 @@ void CL_X11Window::get_message(CL_X11Window *mouse_capture_window)
 			}
 		}
 	}
-}
-
-// This is called for each window by CL_DisplayMessageQueue_X11 to check for messages
-bool CL_X11Window::has_messages()
-{
-	bool message_flag = false;
-
-	if (XPending(display) > 0)
-	{
-		message_flag = true;
-	}
-
-	if (ic.poll(true))
-	{
-		message_flag = true;
-	}
-
-	return message_flag;
+	exposed_rects.clear();
+	largest_exposed_rect = CL_Rect();
 }
 
 void CL_X11Window::setup_joysticks()
@@ -1528,28 +1489,6 @@ bool CL_X11Window::is_clipboard_image_available() const
 void CL_X11Window::set_cursor(CL_CursorProvider_X11 *cursor)
 {
 	//TODO:
-}
-
-bool CL_X11Window::get_xevent( XEvent &event, int event_type) const
-{
-	if (XCheckTypedWindowEvent(display, window, event_type, &event))
-	{
-		return true;
-	}else
-	{
-		return false;
-	}
-
-}
-
-bool CL_X11Window::get_xevent( XEvent &event ) const
-{
-	if  (XPending(display) > 0)
-	{
-		XNextEvent(display, &event);
-		return true;
-	}
-	return false;
 }
 
 void CL_X11Window::request_repaint( const CL_Rect &cl_rect )

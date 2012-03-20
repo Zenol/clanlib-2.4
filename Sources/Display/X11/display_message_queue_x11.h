@@ -73,6 +73,7 @@ public:
 public:
 	int wait(const std::vector<CL_Event> &events, int timeout);
 
+	Display *get_display();
 	void add_client(CL_X11Window *window);
 	void remove_client(CL_X11Window *window);
 
@@ -97,6 +98,8 @@ private:
 	int msg_wait_for_multiple_objects(std::vector<CL_SocketMessage_X11> &event_handles, int timeout);
 	void process_queued_events();
 	CL_X11Window *current_mouse_capture_window;
+
+	Display *display;
 
 /// \}
 };

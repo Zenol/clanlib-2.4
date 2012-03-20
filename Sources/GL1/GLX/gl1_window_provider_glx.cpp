@@ -258,7 +258,6 @@ void CL_GL1WindowProvider_GLX::create(CL_DisplayWindowSite *new_site, const CL_D
 	site = new_site;
 	bool create_provider_flag = false;
 
-	x11_window.open_screen();
 	Display *disp = x11_window.get_display();
 
 	if (!opengl_context)
