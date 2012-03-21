@@ -468,8 +468,6 @@ void CL_X11Window::create(XVisualInfo *visual, CL_DisplayWindowSite *new_site, c
 	maximized = is_maximized();
 	restore_to_maximized = maximized;
 
-	XSync(display, True);
-
 	// Setup the clipboard
 	clipboard.setup();
 
@@ -885,7 +883,6 @@ void CL_X11Window::map_window()
 			if (fullscreen)
 				XSetInputFocus(display, window, RevertToParent, CurrentTime);
 		}
-		XSync(display, True);
 
 		if (!frame_size_calculated)
 		{
