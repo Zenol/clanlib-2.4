@@ -35,13 +35,14 @@
 #include "API/Core/System/keep_alive.h"
 #include "display_message_queue_x11.h"
 #include "x11_window.h"
+#include <dlfcn.h>
 
 CL_DisplayMessageQueue_X11 CL_DisplayMessageQueue_X11::message_queue;
 
 /////////////////////////////////////////////////////////////////////////////
 // CL_DisplayMessageQueue_X11 construction:
 
-CL_DisplayMessageQueue_X11::CL_DisplayMessageQueue_X11() : current_mouse_capture_window(NULL), display(0)
+CL_DisplayMessageQueue_X11::CL_DisplayMessageQueue_X11() : current_mouse_capture_window(NULL), display(0), dlopen_lib_handle(NULL)
 {
 }
 
@@ -51,6 +52,12 @@ CL_DisplayMessageQueue_X11::~CL_DisplayMessageQueue_X11()
 	{
 		XCloseDisplay(display);
 	}
+
+	// This MUST be called after XCloseDisplay - It is used for http://www.xfree86.org/4.8.0/DRI11.html
+	if (dlopen_lib_handle)
+	{
+		dlclose(dlopen_lib_handle);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -59,6 +66,15 @@ CL_DisplayMessageQueue_X11::~CL_DisplayMessageQueue_X11()
 
 /////////////////////////////////////////////////////////////////////////////
 // CL_DisplayMessageQueue_X11 operations:
+
+void *CL_DisplayMessageQueue_X11::dlopen_opengl(const char *filename, int flag)
+{
+	if (!dlopen_lib_handle)		// This is a shared resource. We assume that filename and flags will never change, which makes sense in this case
+	{
+		dlopen_lib_handle = ::dlopen(filename, flag);
+	}
+	return dlopen_lib_handle;
+}
 
 Display *CL_DisplayMessageQueue_X11::get_display()
 {

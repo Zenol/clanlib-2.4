@@ -135,11 +135,6 @@ public:
 	void get_keyboard_modifiers(bool &key_shift, bool &key_alt, bool &key_ctrl) const;
 	CL_Point get_mouse_position() const;
 
-	// The library will be opened / closed by this class
-	// Returns 0 if the library could not be found
-	// Currently, only supports a single library
-	void *dlopen(const char *filename, int flag); 
-
 	void process_queued_events();
 
 /// \}
@@ -186,7 +181,6 @@ private:
 	CL_Size maximum_size;
 	CL_String window_title;
 	bool resize_enabled;
-	void *dlopen_lib_handle;
 	CL_Clipboard_X11 clipboard;
 	std::vector<CL_SocketMessage_X11> current_window_events;
 	std::vector<CL_Rect> last_repaint_rect;

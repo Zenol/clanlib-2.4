@@ -79,6 +79,10 @@ public:
 
 	void set_mouse_capture(CL_X11Window *window, bool state);
 
+	// The library will be opened / closed by this class
+	// Returns 0 if the library could not be found
+	// Currently, only supports a single library
+	void *dlopen_opengl(const char *filename, int flag); 
 /// \}
 /// \name Implementation
 /// \{
@@ -100,7 +104,7 @@ private:
 	CL_X11Window *current_mouse_capture_window;
 
 	Display *display;
-
+	void *dlopen_lib_handle;
 /// \}
 };
 

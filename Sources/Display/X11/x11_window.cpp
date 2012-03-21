@@ -114,7 +114,7 @@ CL_X11Window::CL_X11Window()
   net_wm_state_maximized_horz(None), net_wm_state_hidden(None), net_wm_state_fullscreen(None), kwm_win_decoration(None), win_hints(None),
   net_wm_ping(None), net_frame_extents(None),
   is_window_mapped(false),
-  site(0), clipboard(this), dlopen_lib_handle(NULL),
+  site(0), clipboard(this),
   always_send_window_position_changed_event(false), always_send_window_size_changed_event(false)
 
 {
@@ -141,13 +141,6 @@ CL_X11Window::~CL_X11Window()
 		joysticks[i].get_provider()->dispose();
 
 	close_window();
-
-	// This MUST be called after XCloseDisplay - It is used for http://www.xfree86.org/4.8.0/DRI11.html
-	if (dlopen_lib_handle)
-	{
-		dlclose(dlopen_lib_handle);
-	}
-
 }
 
 void CL_X11Window::create(XVisualInfo *visual, CL_DisplayWindowSite *new_site, const CL_DisplayWindowDescription &desc)
@@ -573,14 +566,6 @@ void CL_X11Window::close_window()
 	frame_size_bottom = 0;
 	frame_size_calculated = false;
 
-}
-
-void *CL_X11Window::dlopen(const char *filename, int flag)
-{
-	if (dlopen_lib_handle)
-		throw CL_Exception("CL_X11Window::dlopen called twice - This is currently not supported, and is probably a bug!");
-	dlopen_lib_handle = ::dlopen(filename, flag);
-	return dlopen_lib_handle;
 }
 
 CL_Rect CL_X11Window::get_geometry() const
