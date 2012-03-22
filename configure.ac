@@ -243,10 +243,13 @@ AC_ARG_ENABLE(sse2, AC_HELP_STRING([--enable-sse2], [Enable SSE2 support]),
   ])
 
 
+AM_CONDITIONAL([DISABLE_SSE2], [test x$use_sse2 = xno])
+
 if test "$use_sse2" != "no"; then
 	CXXFLAGS="$CXXFLAGS -msse2"
 
-	extra_CFLAGS_clanCore="$extra_CFLAGS_clanCore -msse2"
+	# Do not force the user to use sse2, they may not want it
+	dnl extra_CFLAGS_clanCore="$extra_CFLAGS_clanCore -msse2"
 else
 	extra_CFLAGS_clanCore="$extra_CFLAGS_clanCore -DCL_DISABLE_SSE2"
 fi
@@ -452,7 +455,8 @@ if test "$enable_clanDisplay" != "no"; then
 			echo "=============================="
 
 			if test "$use_sse2" != "yes"; then
-				CLANLIB_DISABLE_MODULE(clanSWRender, [ *** Requires SSE2 Support ] )
+			 	dnl CLANLIB_DISABLE_MODULE(clanSWRender, [ *** Requires SSE2 Support ] )
+				echo "Compiling using Stub. Required SSE2 Support"
 			fi
 
 			if test "$enable_clanSWRender" = "auto"; then enable_clanSWRender=yes; fi
@@ -864,7 +868,14 @@ echo "                 clanRegExp = $enable_clanRegExp"
 echo "                 clanSqlite = $enable_clanSqlite"
 echo "                    clanGUI = $enable_clanGUI"
 echo "              clanCSSLayout = $enable_clanCSSLayout"
-echo "               clanSWRender = $enable_clanSWRender"
+
+swrender_options=""
+if test "$enable_clanSWRender" != "no"; then
+	if test "$use_sse2" != "yes"; then
+		swrender_options="$swrender_options * Warning SSE2 Disabled - Using stub"
+	fi
+fi
+echo "               clanSWRender = $enable_clanSWRender $swrender_options"
 
 core_options=""
 if test "$use_sse2" != "no"; then
