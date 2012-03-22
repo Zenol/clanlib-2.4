@@ -247,11 +247,6 @@ AM_CONDITIONAL([DISABLE_SSE2], [test x$use_sse2 = xno])
 
 if test "$use_sse2" != "no"; then
 	CXXFLAGS="$CXXFLAGS -msse2"
-
-	# Do not force the user to use sse2, they may not want it
-	dnl extra_CFLAGS_clanCore="$extra_CFLAGS_clanCore -msse2"
-else
-	extra_CFLAGS_clanCore="$extra_CFLAGS_clanCore -DCL_DISABLE_SSE2"
 fi
 
 if test "$WIN32" = "no"; then
