@@ -143,6 +143,7 @@ public:
 
 private:
 
+	void process_window_resize(const CL_Rect &new_rect);
 	void calculate_window_frame_size();
 	void map_window();
 	void unmap_window();

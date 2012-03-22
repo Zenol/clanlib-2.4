@@ -1072,6 +1072,37 @@ CL_Rect CL_X11Window::get_screen_position() const
 //	return CL_Rect(newx, newy, CL_Size(width, height));
 //}
 
+
+void CL_X11Window::process_window_resize(const CL_Rect &new_rect)
+{
+	CL_Rect rect = current_window_client_area;
+	requested_current_window_client_area = current_window_client_area = new_rect;
+
+	if (site)
+	{
+		if ( (rect.left != current_window_client_area.left) || (rect.top != current_window_client_area.top) || always_send_window_position_changed_event )
+		{
+			site->sig_window_moved->invoke();
+		}
+
+		if ( (rect.get_width() != current_window_client_area.get_width()) || (rect.get_height() != current_window_client_area.get_height()) || always_send_window_size_changed_event )
+		{
+			if (!site->func_window_resize->is_null())
+			{
+				site->func_window_resize->invoke(rect);
+				// TODO: If rect output is different, update this window rect. Maybe use a  XConfigureRequestEvent?
+			}
+
+			if (!callback_on_resized.is_null())
+				callback_on_resized.invoke();
+
+			site->sig_resize->invoke(rect.get_width(), rect.get_height());
+		}
+	}
+	always_send_window_position_changed_event = false;
+
+}
+
 void CL_X11Window::process_message(XEvent &event, CL_X11Window *mouse_capture_window)
 {
 
@@ -1087,11 +1118,10 @@ void CL_X11Window::process_message(XEvent &event, CL_X11Window *mouse_capture_wi
 			// (A client will receive a synthetic ConfigureNotify event that describes the (unchanged) geometry of the window)
 			// (The client will not receive a real ConfigureNotify event because no change has actually taken place.)
 
-			rect = current_window_client_area;
 			if (event.xany.send_event != 0)
 			{
 				int bw = event.xconfigure.border_width;
-				current_window_client_area = CL_Rect( 
+				rect = CL_Rect( 
 					event.xconfigure.x + bw,
 					event.xconfigure.y + bw,
 					event.xconfigure.x + bw + event.xconfigure.width,
@@ -1100,34 +1130,9 @@ void CL_X11Window::process_message(XEvent &event, CL_X11Window *mouse_capture_wi
 			}
 			else
 			{
-				current_window_client_area = get_screen_position();
+				rect = get_screen_position();
 			}
-
-			requested_current_window_client_area = current_window_client_area;
-
-			if (site)
-			{
-				if ( (rect.left != current_window_client_area.left) || (rect.top != current_window_client_area.top) || always_send_window_position_changed_event )
-				{
-					always_send_window_position_changed_event = false;
-					site->sig_window_moved->invoke();
-				}
-
-				if ( (rect.get_width() != current_window_client_area.get_width()) || (rect.get_height() != current_window_client_area.get_height()) || always_send_window_size_changed_event )
-				{
-					always_send_window_size_changed_event = false;
-					if (!site->func_window_resize->is_null())
-					{
-						site->func_window_resize->invoke(rect);
-						// TODO: If rect output is different, update this window rect. Maybe use a  XConfigureRequestEvent?
-					}
-
-					if (!callback_on_resized.is_null())
-						callback_on_resized.invoke();
-
-					site->sig_resize->invoke(rect.get_width(), rect.get_height());
-				}
-			}
+			process_window_resize(rect);
 	
 			break;
 		}
@@ -1157,6 +1162,13 @@ void CL_X11Window::process_message(XEvent &event, CL_X11Window *mouse_capture_wi
 			break;
 		case Expose:
 			// Repaint notification
+
+			if (always_send_window_position_changed_event)	// Sometimes ConfigureNotify notifications are not sent, so make sure here that we are valid
+			{
+				rect = get_screen_position();
+				process_window_resize(rect);
+			}
+
 			if (!site)
 				break;
 
