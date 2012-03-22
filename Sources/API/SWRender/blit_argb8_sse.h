@@ -32,6 +32,9 @@
 #pragma once
 
 #include "api_swrender.h"
+
+#ifndef CL_DISABLE_SSE2
+
 #include <emmintrin.h>
 
 /// \brief SSE accelerated rendering operations for ARGB8888
@@ -330,4 +333,7 @@ inline void CL_BlitARGB8SSE::channels_to_pixels(__m128i &dest0, __m128i &dest1, 
 	} \
 }
 
+#endif
+
 /// \}
+
