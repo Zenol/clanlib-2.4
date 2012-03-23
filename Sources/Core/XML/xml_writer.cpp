@@ -85,10 +85,11 @@ void CL_XMLWriter::write(const CL_XMLToken &token)
 		impl->indent--;
 	}
 
-	if (impl->insert_whitespace)
-	{
-		str.append(impl->indent, L'\t');
-	}
+#ifdef WIN32
+#define NEWLINE_STR "\r\n"
+#else
+#define NEWLINE_STR "\n"
+#endif
 
 	switch (token.type)
 	{
@@ -96,14 +97,15 @@ void CL_XMLWriter::write(const CL_XMLToken &token)
 		return; // should this throw exception instead?
 		
 	case CL_XMLToken::ELEMENT_TOKEN:
-		if (token.variant == CL_XMLToken::END)
+		if (token.variant == CL_XMLToken::BEGIN || token.variant == CL_XMLToken::SINGLE)
 		{
-			str.append("</");
-			str.append(impl->insert_escapes_fast(token.name));
-			str.append(">");
-		}
-		else
-		{
+			if (impl->insert_whitespace)
+			{
+				if (!impl->first_token)
+					str.append(NEWLINE_STR);
+				str.append(impl->indent, L'\t');
+			}
+
 			str.append("<");
 			str.append(impl->insert_escapes_fast(token.name));
 
@@ -118,9 +120,27 @@ void CL_XMLWriter::write(const CL_XMLToken &token)
 			}
 
 			if (token.variant == CL_XMLToken::SINGLE)
+			{
 				str.append("/>");
+				impl->single_line_tag = false;
+			}
 			else
+			{
 				str.append(">");
+				impl->single_line_tag = true;
+			}
+		}
+		else if (token.variant == CL_XMLToken::END)
+		{
+			if (impl->insert_whitespace && !impl->single_line_tag)
+			{
+				str.append(NEWLINE_STR);
+				str.append(impl->indent, L'\t');
+			}
+			str.append("</");
+			str.append(impl->insert_escapes_fast(token.name));
+			str.append(">");
+			impl->single_line_tag = false;
 		}
 		break;
 		
@@ -148,14 +168,7 @@ void CL_XMLWriter::write(const CL_XMLToken &token)
 		return; // not implemented yet.
 	}
 
-	if (impl->insert_whitespace)
-	{
-#ifdef WIN32
-		str.append("\r\n");
-#else
-		str.append("\n");
-#endif
-	}
+	impl->first_token = false;
 
 	if (token.variant == CL_XMLToken::BEGIN)
 	{
