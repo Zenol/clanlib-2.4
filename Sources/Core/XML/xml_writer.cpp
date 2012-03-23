@@ -155,14 +155,33 @@ void CL_XMLWriter::write(const CL_XMLToken &token)
 		break;
 
 	case CL_XMLToken::COMMENT_TOKEN:
+		if (impl->insert_whitespace)
+		{
+			if (!impl->first_token)
+				str.append(NEWLINE_STR);
+			str.append(impl->indent, L'\t');
+		}
 		str.append("<!--");
 		str.append(token.value);
 		str.append("-->");
 		break;
 
+	case CL_XMLToken::PROCESSING_INSTRUCTION_TOKEN:
+		if (impl->insert_whitespace && !impl->first_token)
+			str.append(NEWLINE_STR);
+
+		str.append("<?");
+		str.append(token.name);
+		if (!token.value.empty())
+		{
+			str.append(" ");
+			str.append(token.value);
+		}
+		str.append("?>");
+		break;
+
 	case CL_XMLToken::ENTITY_REFERENCE_TOKEN:
 	case CL_XMLToken::ENTITY_TOKEN:
-	case CL_XMLToken::PROCESSING_INSTRUCTION_TOKEN:
 	case CL_XMLToken::DOCUMENT_TYPE_TOKEN:
 	case CL_XMLToken::NOTATION_TOKEN:
 		return; // not implemented yet.
