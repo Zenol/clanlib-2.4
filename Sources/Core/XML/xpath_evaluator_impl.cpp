@@ -80,6 +80,7 @@ CL_XPathEvaluateResult CL_XPathEvaluator_Impl::evaluate(
 			cur_token.type == CL_XPathToken::type_at_sign ||
 			cur_token.type == CL_XPathToken::type_dot ||
 			cur_token.type == CL_XPathToken::type_double_dot ||
+			cur_token.type == CL_XPathToken::type_node_type ||
 			(cur_token.type == CL_XPathToken::type_operator &&
 				(cur_token.value.oper == CL_XPathToken::operator_slash ||
 				cur_token.value.oper == CL_XPathToken::operator_double_slash)))
@@ -159,8 +160,22 @@ CL_XPathEvaluateResult CL_XPathEvaluator_Impl::evaluate(
 					filtered_nodes.push_back(nodes[node_index]);
 			}
 
-			cur_token = end_token;
-			operand_stack.push_back(CL_XPathObject(filtered_nodes));
+			cur_token = read_token(expression, end_token);
+			CL_XPathToken next_token = read_token(expression, cur_token);
+			if (next_token.type == CL_XPathToken::type_axis_name ||
+				next_token.type == CL_XPathToken::type_name_test ||
+				next_token.type == CL_XPathToken::type_node_type ||
+				next_token.type == CL_XPathToken::type_at_sign ||
+				next_token.type == CL_XPathToken::type_dot ||
+				next_token.type == CL_XPathToken::type_double_dot ||
+				(next_token.type == CL_XPathToken::type_operator && next_token.value.oper == CL_XPathToken::operator_double_slash))
+			{
+				cur_token = read_location_steps(expression, next_token, filtered_nodes, 0, operand_stack);
+			}
+			else
+			{
+				operand_stack.push_back(CL_XPathObject(filtered_nodes));
+			}
 		}
 		else if (cur_token.type == CL_XPathToken::type_operator)
 		{
@@ -207,7 +222,6 @@ CL_XPathEvaluateResult CL_XPathEvaluator_Impl::evaluate(
 	result.next_token = cur_token;
 	return result;
 }
-
 
 CL_XPathObject CL_XPathEvaluator_Impl::call_function(const CL_XPathNodeSet& context, CL_XPathNodeSet::size_type context_node_index, const CL_StringRef &name, const std::vector<CL_XPathObject> &parameters) const
 {
@@ -878,7 +892,7 @@ CL_XPathToken CL_XPathEvaluator_Impl::read_location_path(
 	std::vector<CL_XPathEvaluator_Impl::Operand> &operand_stack) const
 {
 /*
-	[1] LocationPath               ::= RelativeLocationPath | AbsoluteLocationPath	
+	[1] LocationPath               ::= RelativeLocationPath | AbsoluteLocationPath
 	[2] AbsoluteLocationPath       ::= '/' RelativeLocationPath? | AbbreviatedAbsoluteLocationPath
 	[3] RelativeLocationPath       ::= Step | RelativeLocationPath '/' Step | AbbreviatedRelativeLocationPath
 */
@@ -1394,7 +1408,7 @@ bool CL_XPathEvaluator_Impl::confirm_step_requirements(const CL_DomNode &node, c
 		test_passed = true;
 		break;
 	case CL_XPathLocationStep::type_name:
-		test_passed = step.test_str == "*" || node.get_node_name() == step.test_str;
+		test_passed = (node.get_node_type() == CL_DomNode::ELEMENT_NODE || node.get_node_type() == CL_DomNode::ATTRIBUTE_NODE) && (step.test_str == "*" || node.get_node_name() == step.test_str);
 		break;
 	case CL_XPathLocationStep::type_node:
 		if (step.node_type != CL_XPathToken::node_type_node)
