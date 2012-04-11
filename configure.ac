@@ -123,6 +123,15 @@ case $target in
 		;;
 esac
 
+dnl Define CL_ARM_PLATFORM if building for an ARM target
+case $target in
+	arm* )
+		CXXFLAGS="$CXXFLAGS -DCL_ARM_PLATFORM"
+		CFLAGS="$CXXFLAGS -DCL_ARM_PLATFORM"
+		;;
+esac
+
+
 dnl Extra flags that are needed to compile (for pkg-config)
 if test "$WIN32" = "yes"; then
 	case $target in
