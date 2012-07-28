@@ -250,5 +250,6 @@
 			#pragma comment(lib, "zlib-static-mt-debug.lib")
 		#endif
 	#endif
+	#pragma comment(lib, "advapi32.lib")
 #endif
 
