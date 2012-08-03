@@ -79,6 +79,11 @@ public:
 	/// \brief Disconnects a client
 	void disconnect();
 
+	/// \brief Get Remote name
+	///
+	/// \return remote_name
+	CL_SocketName get_remote_name() const;
+
 private:
 	/// \brief Disallow copy constructors
 	CL_NetGameConnection(CL_NetGameConnection &other);
