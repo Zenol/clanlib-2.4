@@ -380,6 +380,10 @@ CL_PixelBuffer CL_GL1GraphicContextProvider::get_pixeldata(const CL_Rect& rect2,
 	if (!framebuffer_bound)
 		cl1ReadBuffer(GL_BACK);
 	//cl1ClampColor(GL_CLAMP_READ_COLOR, clamp ? GL_TRUE : GL_FALSE);
+	cl1PixelStorei(GL_PACK_ALIGNMENT, 1);
+	cl1PixelStorei(GL_PACK_ROW_LENGTH, pbuf.get_pitch() / pbuf.get_bytes_per_pixel());
+	cl1PixelStorei(GL_PACK_SKIP_PIXELS, 0);
+	cl1PixelStorei(GL_PACK_SKIP_ROWS, 0);
 	cl1ReadPixels(rect.left, rect.top, rect.get_width(), rect.get_height(), format, type, pbuf.get_data());
 	pbuf.flip_vertical();
 	return pbuf;
