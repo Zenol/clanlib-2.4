@@ -1324,8 +1324,8 @@ enum CL_DisplayDefines
 	// ARB_shader_objects:
 
 	GL_PROGRAM_OBJECT                      = 0x8B40,
-	GL_TYPE                                = 0x8B4E,
-	GL_SUBTYPE                             = 0x8B4F,
+	//GL_TYPE                                = 0x8B4E,
+	//GL_SUBTYPE                             = 0x8B4F,
 #endif
 #ifndef GL_DELETE_STATUS 
 	GL_DELETE_STATUS                       = 0x8B80,
