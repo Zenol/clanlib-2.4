@@ -69,6 +69,12 @@ public:
 
 	const char *get_data() const;
 
+	template<typename Type>
+	Type *get_data() { return reinterpret_cast<Type*>(get_data()); }
+
+	template<typename Type>
+	const Type *get_data() const { return reinterpret_cast<const Type*>(get_data()); }
+
 	/// \brief Returns the size of the data.
 	int get_size() const;
 

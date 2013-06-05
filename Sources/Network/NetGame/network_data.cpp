@@ -37,142 +37,232 @@
 
 CL_NetGameEvent CL_NetGameNetworkData::receive_data(CL_TCPConnection connection)
 {
-	// Receive the message:
-
 	int size = connection.read_uint16();
 	if (size > packet_limit)
 		throw CL_Exception("Incoming message too big");
 	CL_DataBuffer buffer(size);
 	connection.read(buffer.get_data(), buffer.get_size());
-
-	CL_IODevice_Memory iodevice_memory(buffer);
-	CL_DomDocument doc;
-	doc.load(iodevice_memory);
-
-	// Read the XML message:
-	CL_NetGameEvent e(doc.get_document_element().get_tag_name());
-	CL_DomNode cur = doc.get_document_element().get_first_child();
-	while (!cur.is_null())
-	{
-		if (cur.is_element())
-		{
-			CL_DomElement argument_element = cur.to_element();
-			e.add_argument(create_event_value(argument_element));
-		}
-		cur = cur.get_next_sibling();
-	}
-	return e;
-}
-
-CL_NetGameEventValue CL_NetGameNetworkData::create_event_value(CL_DomElement &value_element)
-{
-	if (value_element.get_tag_name() == "null")
-	{
-		return CL_NetGameEventValue(CL_NetGameEventValue::null);
-	}
-	else if (value_element.get_tag_name() == "uinteger")
-	{
-		return CL_NetGameEventValue(CL_StringHelp::text_to_uint(value_element.get_text()));
-	}
-	else if (value_element.get_tag_name() == "integer")
-	{
-		return CL_NetGameEventValue(CL_StringHelp::text_to_int(value_element.get_text()));
-	}
-	else if (value_element.get_tag_name() == "number")
-	{
-		return CL_NetGameEventValue(CL_StringHelp::text_to_float(value_element.get_text()));
-	}
-	else if (value_element.get_tag_name() == "boolean")
-	{
-		return CL_NetGameEventValue(value_element.get_text() == "true");
-	}
-	else if (value_element.get_tag_name() == "string")
-	{
-		return CL_NetGameEventValue(value_element.get_text());
-	}
-	else if (value_element.get_tag_name() == "complex")
-	{
-		CL_NetGameEventValue value(CL_NetGameEventValue::complex);
-		CL_DomNode cur = value_element.get_first_child();
-		while (!cur.is_null())
-		{
-			if (cur.is_element())
-			{
-				CL_DomElement member_element = cur.to_element();
-				value.add_member(create_event_value(member_element));
-			}
-			cur = cur.get_next_sibling();
-		}
-		return value;
-	}
-	else
-	{
-		return CL_NetGameEventValue();
-	}
+	return decode_event(buffer);
 }
 
 void CL_NetGameNetworkData::send_data(CL_TCPConnection connection, const CL_NetGameEvent &e)
 {
-	// Create XML message to send:
-
-	CL_DomDocument doc;
-	CL_DomElement event_element = doc.create_element(e.get_name());
-	for (unsigned int i = 0; i < e.get_argument_count(); i++)
-	{
-		CL_NetGameEventValue value = e.get_argument(i);
-		event_element.append_child(create_event_value_element(doc, value));
-	}
-	doc.append_child(event_element);
-
-	// Send the message:
-
-	CL_IODevice_Memory iodevice_memory;
-	doc.save(iodevice_memory, false);
-	CL_DataBuffer buffer = iodevice_memory.get_data();
+	CL_DataBuffer buffer = encode_event(e);
 	if (buffer.get_size() > packet_limit)
 		throw CL_Exception("Outgoing message too big");
-
 	connection.write_uint16(buffer.get_size());
 	connection.write(buffer.get_data(), buffer.get_size());
 }
 
-CL_DomElement CL_NetGameNetworkData::create_event_value_element(CL_DomDocument &doc, const CL_NetGameEventValue &value)
+CL_NetGameEvent CL_NetGameNetworkData::decode_event(const CL_DataBuffer &data)
 {
-	CL_DomElement value_element;
+	const unsigned char *d = data.get_data<unsigned char>();
+	unsigned int length = data.get_size();
+	if (length < 3)
+		throw CL_Exception("Invalid network data");
+
+	unsigned int name_length = *reinterpret_cast<const unsigned short*>(d);
+	if (length < 2 + name_length + 1)
+		throw CL_Exception("Invalid network data");
+	std::string name = std::string(reinterpret_cast<const char*>(d + 2), name_length);
+
+	CL_NetGameEvent e(name);
+	unsigned int pos = 2 + name_length;
+	while (true)
+	{
+		if (pos >= length)
+			throw CL_Exception("Invalid network data");
+		unsigned char type = d[pos++];
+		if (type == 0)
+			break;
+		e.add_argument(decode_value(type, d, length, pos));
+	}
+	return e;
+}
+
+CL_NetGameEventValue CL_NetGameNetworkData::decode_value(unsigned char type, const unsigned char *d, unsigned int length, unsigned int &pos)
+{
+	switch (type)
+	{
+	case 1: // null
+		return CL_NetGameEventValue(CL_NetGameEventValue::null);
+	case 2: // uint
+	{
+			if (pos + 4 > length)
+				throw CL_Exception("Invalid network data");
+			unsigned int v = *reinterpret_cast<const unsigned int*>(d + pos);
+			pos += 4;
+			return CL_NetGameEventValue(v);
+		}
+	case 3: // int
+		{
+			if (pos + 4 > length)
+				throw CL_Exception("Invalid network data");
+			int v = *reinterpret_cast<const int*>(d + pos);
+			pos += 4;
+			return CL_NetGameEventValue(v);
+		}
+	case 4: // number
+		{
+			if (pos + 4 > length)
+				throw CL_Exception("Invalid network data");
+			float v = *reinterpret_cast<const float*>(d + pos);
+			pos += 4;
+			return CL_NetGameEventValue(v);
+		}
+	case 5: // false boolean
+		return CL_NetGameEventValue(false);
+	case 6: // true boolean
+		return CL_NetGameEventValue(true);
+	case 7: // string
+		{
+			if (pos + 2 > length)
+				throw CL_Exception("Invalid network data");
+			unsigned short name_length = *reinterpret_cast<const unsigned short*>(d + pos);
+			pos += 2;
+			if (pos + name_length > length)
+				throw CL_Exception("Invalid network data");
+			CL_String value(reinterpret_cast<const char*>(d + pos), name_length);
+			pos += name_length;
+			return CL_NetGameEventValue(value);
+	}
+	case 8: // complex
+	{
+		CL_NetGameEventValue value(CL_NetGameEventValue::complex);
+			while (true)
+		{
+				if (pos >= length)
+					throw CL_Exception("Invalid network data");
+				unsigned char type = d[pos++];
+				if (type == 0)
+					break;
+				value.add_member(decode_value(type, d, length, pos));
+		}
+		return value;
+	}
+	case 9: // uchar
+	{
+			if (pos + 1 > length)
+				throw CL_Exception("Invalid network data");
+			unsigned char v = *reinterpret_cast<const unsigned char*>(d + pos);
+			pos += 1;
+			return CL_NetGameEventValue(v);
+		}
+	case 10: // char
+		{
+			if (pos + 1 > length)
+				throw CL_Exception("Invalid network data");
+			char v = *reinterpret_cast<const char*>(d + pos);
+			pos += 1;
+			return CL_NetGameEventValue(v);
+		}
+	default:
+		throw CL_Exception("Invalid network data");
+	}
+}
+
+CL_DataBuffer CL_NetGameNetworkData::encode_event(const CL_NetGameEvent &e)
+{
+	unsigned int length = 3 + e.get_name().length();
+	for (unsigned int i = 0; i < e.get_argument_count(); i++)
+		length += get_encoded_length(e.get_argument(i));
+
+	CL_DataBuffer data(length);
+	unsigned char *d = data.get_data<unsigned char>();
+
+	// Write name (2 + name length)
+	unsigned int name_length = e.get_name().length();
+	*reinterpret_cast<unsigned short*>(d) = name_length;
+	d += 2;
+	memcpy(d, e.get_name().data(), name_length);
+	d += name_length;
+
+	for (unsigned int i = 0; i < e.get_argument_count(); i++)
+		d += encode_value(d, e.get_argument(i));
+
+	// Write end marker
+	*d = 0;
+
+	return data;
+}
+
+unsigned int CL_NetGameNetworkData::encode_value(unsigned char *d, const CL_NetGameEventValue &value)
+{
 	switch (value.get_type())
 	{
 	case CL_NetGameEventValue::null:
-		value_element = doc.create_element("null");
-		break;
+		*d = 1;
+		return 1;
 	case CL_NetGameEventValue::uinteger:
-		value_element = doc.create_element("uinteger");
-		value_element.append_child(doc.create_text_node(CL_StringHelp::uint_to_text(value.to_uinteger())));
-		break;
+		*d = 2;
+		*reinterpret_cast<unsigned int*>(d + 1) = value.to_uinteger();
+		return 5;
 	case CL_NetGameEventValue::integer:
-		value_element = doc.create_element("integer");
-		value_element.append_child(doc.create_text_node(CL_StringHelp::int_to_text(value.to_integer())));
-		break;
+		*d = 3;
+		*reinterpret_cast<int*>(d + 1) = value.to_integer();
+		return 5;
 	case CL_NetGameEventValue::number:
-		value_element = doc.create_element("number");
-		value_element.append_child(doc.create_text_node(CL_StringHelp::float_to_text(value.to_number())));
-		break;
+		*d = 4;
+		*reinterpret_cast<float*>(d + 1) = value.to_number();
+		return 5;
 	case CL_NetGameEventValue::boolean:
-		value_element = doc.create_element("boolean");
-		value_element.append_child(doc.create_text_node(value.to_boolean() ? "true" : "false"));
-		break;
+		*d = value.to_boolean() ? 6 : 5;
+		return 1;
 	case CL_NetGameEventValue::string:
-		value_element = doc.create_element("string");
-		value_element.append_child(doc.create_text_node(value.to_string()));
-		break;
+		{
+			std::string s = value.to_string();
+			*d = 7;
+			*reinterpret_cast<unsigned short*>(d + 1) = s.length();
+			memcpy(d + 3, s.data(), s.length());
+			return 3 + s.length();
+		}
 	case CL_NetGameEventValue::complex:
 		{
-			value_element = doc.create_element("complex");
+			d[0] = 8;
+			unsigned l = 1;
 			for (unsigned int i = 0; i < value.get_member_count(); i++)
-				value_element.append_child(create_event_value_element(doc, value.get_member(i)));
+				l += encode_value(d + l, value.get_member(i));
+			d[l] = 0;
+			l++;
+			return l;
 		}
-		break;
+	case CL_NetGameEventValue::ucharacter:
+		*d = 9;
+		*reinterpret_cast<unsigned char*>(d + 1) = value.to_ucharacter();
+		return 2;
+	case CL_NetGameEventValue::character:
+		*d = 10;
+		*reinterpret_cast<char*>(d + 1) = value.to_character();
+		return 2;
 	default:
 		throw CL_Exception("Unknown game event value type");
 	}
-	return value_element;
+}
+
+unsigned int CL_NetGameNetworkData::get_encoded_length(const CL_NetGameEventValue &value)
+{
+	switch (value.get_type())
+	{
+	case CL_NetGameEventValue::null:
+	case CL_NetGameEventValue::boolean:
+		return 1;
+	case CL_NetGameEventValue::character:
+	case CL_NetGameEventValue::ucharacter:
+		return 2;
+	case CL_NetGameEventValue::uinteger:
+	case CL_NetGameEventValue::integer:
+	case CL_NetGameEventValue::number:
+		return 5;
+	case CL_NetGameEventValue::string:
+		return 1 + 2 + value.to_string().length();
+	case CL_NetGameEventValue::complex:
+		{
+			unsigned l = 2;
+			for (unsigned int i = 0; i < value.get_member_count(); i++)
+				l += get_encoded_length(value.get_member(i));
+			return l;
+		}
+	default:
+		throw CL_Exception("Unknown game event value type");
+	}
 }

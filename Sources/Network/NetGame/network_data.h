@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include "API/Core/System/databuffer.h"
 #include "API/Network/NetGame/event.h"
 #include "API/Network/Socket/tcp_connection.h"
 
@@ -41,8 +42,13 @@ public:
 	static void send_data(CL_TCPConnection connection, const CL_NetGameEvent &e);
 
 private:
-	static CL_NetGameEventValue create_event_value(CL_DomElement &value_element);
-	static CL_DomElement create_event_value_element(CL_DomDocument &doc, const CL_NetGameEventValue &value);
+	static CL_NetGameEvent decode_event(const CL_DataBuffer &data);
+	static CL_DataBuffer encode_event(const CL_NetGameEvent &e);
+
+	static unsigned int get_encoded_length(const CL_NetGameEventValue &value);
+	static unsigned int encode_value(unsigned char *d, const CL_NetGameEventValue &value);
+
+	static CL_NetGameEventValue decode_value(unsigned char type, const unsigned char *d, unsigned int length, unsigned int &pos);
 
 	enum { packet_limit = 32000 };
 };

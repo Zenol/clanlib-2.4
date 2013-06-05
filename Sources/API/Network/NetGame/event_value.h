@@ -44,6 +44,8 @@ public:
 		null,
 		integer,
 		uinteger,
+		character,
+		ucharacter,
 		string,
 		boolean,
 		number,
@@ -61,6 +63,16 @@ public:
 	///
 	/// \param value = value
 	CL_NetGameEventValue(unsigned int value);
+
+	/// \brief Constructs a NetGameEventValue
+	///
+	/// \param value = value
+	CL_NetGameEventValue(char value);
+
+	/// \brief Constructs a NetGameEventValue
+	///
+	/// \param value = value
+	CL_NetGameEventValue(unsigned char value);
 
 	/// \brief Constructs a NetGameEventValue
 	///
@@ -113,6 +125,16 @@ public:
 	/// \return true = integer
 	bool is_integer() const;
 
+	/// \brief Is Ucharacter
+	///
+	/// \return true = ucharacter
+	bool is_ucharacter() const;
+
+	/// \brief Is Character
+	///
+	/// \return true = character
+	bool is_character() const;
+
 	/// \brief Is Number
 	///
 	/// \return true = number
@@ -154,6 +176,16 @@ public:
 	/// \return int
 	int to_integer() const;
 
+	/// \brief To unsigned character
+	///
+	/// \return unsigned char
+	unsigned int to_ucharacter() const;
+
+	/// \brief To character
+	///
+	/// \return char
+	int to_character() const;
+
 	/// \brief To number
 	///
 	/// \return float
@@ -171,6 +203,8 @@ public:
 
 	inline operator unsigned int() const { return to_uinteger(); }
 	inline operator int() const { return to_integer(); }
+	inline operator unsigned char() const { return to_ucharacter(); }
+	inline operator char() const { return to_character(); }
 	inline operator float() const { return to_number(); }
 	inline operator CL_String() const { return to_string(); }
 	inline operator bool() const { return to_boolean(); }
@@ -185,6 +219,8 @@ private:
 	{
 		int value_int;
 		unsigned int value_uint;
+		char value_char;
+		unsigned char value_uchar;
 		float value_float;
 		bool value_bool;
 	};
