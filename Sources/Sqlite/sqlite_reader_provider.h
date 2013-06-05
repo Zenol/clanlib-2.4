@@ -57,7 +57,10 @@ public:
 	int get_name_index(const CL_StringRef &name) const;
 	CL_String get_column_string(int index) const;
 	bool get_column_bool(int index) const;
+	char get_column_char(int index) const;
+	unsigned char get_column_uchar(int index) const;
 	int get_column_int(int index) const;
+	unsigned int get_column_uint(int index) const;
 	double get_column_double(int index) const;
 	CL_DateTime get_column_datetime(int index) const;
 	CL_DataBuffer get_column_binary(int index) const;

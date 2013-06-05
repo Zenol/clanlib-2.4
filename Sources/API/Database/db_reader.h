@@ -83,8 +83,17 @@ public:
 	/// \brief Retrieves the value of the specified column as a boolean
 	bool get_column_bool(int index) const;
 	
+	/// \brief Retrieves the value of the specified column as a boolean
+	char get_column_char(int index) const;
+	
+	/// \brief Retrieves the value of the specified column as a boolean
+	unsigned char get_column_uchar(int index) const;
+	
 	/// \brief Retrieves the value of the specified column as an integer
 	int get_column_int(int index) const;
+	
+	/// \brief Retrieves the value of the specified column as an integer
+	unsigned int get_column_uint(int index) const;
 	
 	/// \brief Retrieves the value of the specified column as a double
 	double get_column_double(int index) const;
@@ -101,8 +110,17 @@ public:
 	/// \brief Retrieves the value of the specified column as a boolean
 	bool get_column_bool(const CL_StringRef &column_name) const;
 
+	/// \brief Retrieves the value of the specified column as a boolean
+	char get_column_char(const CL_StringRef &column_name) const;
+
+	/// \brief Retrieves the value of the specified column as a boolean
+	unsigned char get_column_uchar(const CL_StringRef &column_name) const;
+
 	/// \brief Retrieves the value of the specified column as an integer
 	int get_column_int(const CL_StringRef &column_name) const;
+
+	/// \brief Retrieves the value of the specified column as an integer
+	unsigned int get_column_uint(const CL_StringRef &column_name) const;
 
 	/// \brief Retrieves the value of the specified column as a double
 	double get_column_double(const CL_StringRef &column_name) const;

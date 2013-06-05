@@ -89,9 +89,24 @@ bool CL_DBReader::get_column_bool(int index) const
 	return impl->provider->get_column_bool(index);
 }
 
+char CL_DBReader::get_column_char(int index) const
+{
+	return impl->provider->get_column_char(index);
+}
+
+unsigned char CL_DBReader::get_column_uchar(int index) const
+{
+	return impl->provider->get_column_uchar(index);
+}
+
 int CL_DBReader::get_column_int(int index) const
 {
 	return impl->provider->get_column_int(index);
+}
+
+unsigned int CL_DBReader::get_column_uint(int index) const
+{
+	return impl->provider->get_column_uint(index);
 }
 
 double CL_DBReader::get_column_double(int index) const
@@ -119,9 +134,24 @@ bool CL_DBReader::get_column_bool(const CL_StringRef &column_name) const
 	return impl->provider->get_column_bool(get_name_index(column_name));
 }
 
+char CL_DBReader::get_column_char(const CL_StringRef &column_name) const
+{
+	return impl->provider->get_column_char(get_name_index(column_name));
+}
+
+unsigned char CL_DBReader::get_column_uchar(const CL_StringRef &column_name) const
+{
+	return impl->provider->get_column_uchar(get_name_index(column_name));
+}
+
 int CL_DBReader::get_column_int(const CL_StringRef &column_name) const
 {
 	return impl->provider->get_column_int(get_name_index(column_name));
+}
+
+unsigned int CL_DBReader::get_column_uint(const CL_StringRef &column_name) const
+{
+	return impl->provider->get_column_uint(get_name_index(column_name));
 }
 
 double CL_DBReader::get_column_double(const CL_StringRef &column_name) const
