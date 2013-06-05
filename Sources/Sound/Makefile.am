@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libclan23Sound.la
+lib_LTLIBRARIES = libclan24Sound.la
 
-libclan23Sound_la_SOURCES = \
+libclan24Sound_la_SOURCES = \
 SoundFilters/echofilter.cpp \
 SoundFilters/fadefilter.cpp \
 SoundFilters/inverse_echofilter.cpp \
@@ -36,29 +36,29 @@ SoundProviders/soundprovider_session.cpp \
 sound_sse.cpp
 
 if WIN32
-libclan23Sound_la_SOURCES += \
+libclan24Sound_la_SOURCES += \
 Win32/soundoutput_directsound.cpp \
 Win32/soundoutput_directsound.h \
 SoundProviders/Win32/soundprovider_recorder_directsound.cpp \
 SoundProviders/Win32/soundprovider_recorder_directsound.h
 else
-libclan23Sound_la_SOURCES += \
+libclan24Sound_la_SOURCES += \
 Unix/soundoutput_oss.cpp \
 Unix/soundoutput_oss.h
 if ALSA
-libclan23Sound_la_SOURCES += \
+libclan24Sound_la_SOURCES += \
 Unix/soundoutput_alsa.cpp \
 Unix/soundoutput_alsa.h
 endif
-libclan23Sound_la_SOURCES += \
+libclan24Sound_la_SOURCES += \
 SoundProviders/Unix/soundprovider_recorder_oss.cpp \
 SoundProviders/Unix/soundprovider_recorder_oss.h
 endif
 
-libclan23Sound_la_LDFLAGS = \
+libclan24Sound_la_LDFLAGS = \
   -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) $(LDFLAGS_LT_RELEASE) \
   $(extra_LIBS_clanSound)
 
-libclan23Sound_la_CXXFLAGS=$(clanSound_CXXFLAGS) $(extra_CFLAGS_clanSound)
+libclan24Sound_la_CXXFLAGS=$(clanSound_CXXFLAGS) $(extra_CFLAGS_clanSound)
 # EOF #
 

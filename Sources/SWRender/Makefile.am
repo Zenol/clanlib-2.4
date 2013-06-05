@@ -1,15 +1,15 @@
-lib_LTLIBRARIES = libclan23SWRender.la
+lib_LTLIBRARIES = libclan24SWRender.la
 
-libclan23SWRender_la_SOURCES = precomp.cpp
+libclan24SWRender_la_SOURCES = precomp.cpp
 
 if DISABLE_SSE2
-libclan23SWRender_la_SOURCES += \
+libclan24SWRender_la_SOURCES += \
 X11/Stub/setup_swrender.cpp \
 X11/Stub/swr_program_object.cpp \
 X11/Stub/swr_graphic_context.cpp \
 X11/Stub/swr_target.cpp
 else
-libclan23SWRender_la_SOURCES += \
+libclan24SWRender_la_SOURCES += \
 swr_pixel_buffer_provider.h \
 swr_element_array_buffer_provider.h \
 swr_input_device_provider.h \
@@ -80,11 +80,11 @@ Canvas/Commands/pixel_command_triangle.cpp \
 swr_target.cpp
 endif
 
-libclan23SWRender_la_LDFLAGS = \
+libclan24SWRender_la_LDFLAGS = \
   -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) $(LDFLAGS_LT_RELEASE) \
   $(extra_LIBS_SWRender)
 
-libclan23SWRender_la_CXXFLAGS=$(SWRender_CXXFLAGS) $(extra_CFLAGS_SWRender)
+libclan24SWRender_la_CXXFLAGS=$(SWRender_CXXFLAGS) $(extra_CFLAGS_SWRender)
 
 # EOF #
 

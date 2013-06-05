@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libclan23Network.la
+lib_LTLIBRARIES = libclan24Network.la
 
-libclan23Network_la_SOURCES = \
+libclan24Network_la_SOURCES = \
 precomp.cpp \
 NetGame/client.cpp \
 NetGame/connection.cpp \
@@ -32,20 +32,20 @@ Socket/udp_socket.cpp \
 Socket/udp_socket_impl.cpp 
 
 if WIN32
-libclan23Network_la_SOURCES += \
+libclan24Network_la_SOURCES += \
 Socket/event_provider_win32socket.cpp \
 Socket/win32_socket.cpp \
 setupnetwork_win32.cpp
 else
-libclan23Network_la_SOURCES += \
+libclan24Network_la_SOURCES += \
 Socket/unix_socket.cpp\
 setupnetwork_unix.cpp
 endif
 
-libclan23Network_la_LDFLAGS = \
+libclan24Network_la_LDFLAGS = \
   -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) $(LDFLAGS_LT_RELEASE) \
   $(extra_LIBS_Network)
 
-libclan23Sound_la_CXXFLAGS=$(Network_CXXFLAGS) $(extra_CFLAGS_Network)
+libclan24Sound_la_CXXFLAGS=$(Network_CXXFLAGS) $(extra_CFLAGS_Network)
 
 # EOF #
