@@ -1,6 +1,6 @@
 /*
 **  ClanLib SDK
-**  Copyright (c) 1997-2011 The ClanLib Team
+**  Copyright (c) 1997-2013 The ClanLib Team
 **
 **  This software is provided 'as-is', without any express or implied
 **  warranty.  In no event will the authors be held liable for any damages
@@ -44,8 +44,9 @@ public:
 
 private:
 	void connection_main();
+	bool read_data(const void *data, int size, int &out_bytes_consumed);
+	bool write_data(CL_DataBuffer &buffer);
 
-private:
 	CL_NetGameConnection *base;
 
 	CL_NetGameConnectionSite *site;

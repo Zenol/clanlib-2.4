@@ -1,6 +1,6 @@
 /*
 **  ClanLib SDK
-**  Copyright (c) 1997-2011 The ClanLib Team
+**  Copyright (c) 1997-2013 The ClanLib Team
 **
 **  This software is provided 'as-is', without any express or implied
 **  warranty.  In no event will the authors be held liable for any damages
@@ -29,29 +29,36 @@
 #include "Network/precomp.h"
 #include "API/Core/System/databuffer.h"
 #include "API/Core/IOData/iodevice_memory.h"
-#include "API/Core/XML/dom_document.h"
-#include "API/Core/XML/dom_element.h"
-#include "API/Core/XML/dom_text.h"
 #include "API/Core/Text/string_help.h"
+#include "API/Core/Zip/zlib_compression.h"
 #include "network_data.h"
 
-CL_NetGameEvent CL_NetGameNetworkData::receive_data(CL_TCPConnection connection)
+CL_NetGameEvent CL_NetGameNetworkData::receive_data(const void *data, int size, int &out_bytes_consumed)
 {
-	int size = connection.read_uint16();
-	if (size > packet_limit)
-		throw CL_Exception("Incoming message too big");
-	CL_DataBuffer buffer(size);
-	connection.read(buffer.get_data(), buffer.get_size());
-	return decode_event(buffer);
+	if (size >= 2)
+	{
+		int payload_size = *static_cast<const unsigned short *>(data);
+		if (payload_size > packet_limit)
+			throw CL_Exception("Incoming message too big");
+
+		if (size >= 2 + payload_size)
+		{
+			out_bytes_consumed = 2 + payload_size;
+			DataBuffer buffer(static_cast<const char*>(data) + 2, payload_size);
+			return decode_event(buffer);
+		}
+	}
+
+	out_bytes_consumed = 0;
+	return CL_NetGameEvent(std::string());
 }
 
-void CL_NetGameNetworkData::send_data(CL_TCPConnection connection, const CL_NetGameEvent &e)
+DataBuffer CL_NetGameNetworkData::send_data(const CL_NetGameEvent &e)
 {
 	CL_DataBuffer buffer = encode_event(e);
-	if (buffer.get_size() > packet_limit)
+	if (buffer.get_size() > packet_limit + 2)
 		throw CL_Exception("Outgoing message too big");
-	connection.write_uint16(buffer.get_size());
-	connection.write(buffer.get_data(), buffer.get_size());
+	return buffer;
 }
 
 CL_NetGameEvent CL_NetGameNetworkData::decode_event(const CL_DataBuffer &data)
@@ -156,6 +163,18 @@ CL_NetGameEventValue CL_NetGameNetworkData::decode_value(unsigned char type, con
 			pos += 1;
 			return CL_NetGameEventValue(v);
 		}
+	case 11: // binary
+		{
+			if (pos + 2 > length)
+				throw CL_Exception("Invalid network data");
+			unsigned short binary_length = *reinterpret_cast<const unsigned short*>(d + pos);
+			pos += 2;
+			if (pos + binary_length > length)
+				throw CL_Exception("Invalid network data");
+			DataBuffer value(reinterpret_cast<const char*>(d + pos), binary_length);
+			pos += binary_length;
+			return CL_NetGameEventValue(value);
+		}
 	default:
 		throw CL_Exception("Invalid network data");
 	}
@@ -167,8 +186,11 @@ CL_DataBuffer CL_NetGameNetworkData::encode_event(const CL_NetGameEvent &e)
 	for (unsigned int i = 0; i < e.get_argument_count(); i++)
 		length += get_encoded_length(e.get_argument(i));
 
-	CL_DataBuffer data(length);
-	unsigned char *d = data.get_data<unsigned char>();
+	CL_DataBuffer data(length + 2);
+
+	*data.get_data<unsigned short>() = length;
+
+	unsigned char *d = data.get_data<unsigned char>() + 2;
 
 	// Write name (2 + name length)
 	unsigned int name_length = e.get_name().length();
@@ -234,6 +256,14 @@ unsigned int CL_NetGameNetworkData::encode_value(unsigned char *d, const CL_NetG
 		*d = 10;
 		*reinterpret_cast<char*>(d + 1) = value.to_character();
 		return 2;
+	case CL_NetGameEventValue::binary:
+		{
+			CL_DataBuffer s = value.to_binary();
+			*d = 7;
+			*reinterpret_cast<unsigned short*>(d + 1) = s.get_size();
+			memcpy(d + 3, s.get_data(), s.get_size());
+			return 3 + s.get_size();
+		}
 	default:
 		throw CL_Exception("Unknown game event value type");
 	}
@@ -255,6 +285,8 @@ unsigned int CL_NetGameNetworkData::get_encoded_length(const CL_NetGameEventValu
 		return 5;
 	case CL_NetGameEventValue::string:
 		return 1 + 2 + value.to_string().length();
+	case CL_NetGameEventValue::binary:
+		return 1 + 2 + value.to_binary().get_size();
 	case CL_NetGameEventValue::complex:
 		{
 			unsigned l = 2;

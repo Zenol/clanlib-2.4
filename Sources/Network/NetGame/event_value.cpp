@@ -1,6 +1,6 @@
 /*
 **  ClanLib SDK
-**  Copyright (c) 1997-2011 The ClanLib Team
+**  Copyright (c) 1997-2013 The ClanLib Team
 **
 **  This software is provided 'as-is', without any express or implied
 **  warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,7 @@
 
 #include "Network/precomp.h"
 #include "API/Network/NetGame/event_value.h"
+#include "API/Core/Text/string_help.h"
 
 CL_NetGameEventValue::CL_NetGameEventValue()
 : type(null), value_int(0)
@@ -69,18 +70,19 @@ CL_NetGameEventValue::CL_NetGameEventValue(const CL_StringRef &value)
 {
 }
 
-CL_NetGameEventValue::CL_NetGameEventValue(const char *value)
-: type(string), value_string(value)
-{
-}
-
 CL_NetGameEventValue::CL_NetGameEventValue(const wchar_t *value)
-: type(string), value_string(value)
+: type(string)
 {
+	value_string = StringHelp::ucs2_to_utf8(value);
 }
 
 CL_NetGameEventValue::CL_NetGameEventValue(bool value)
 : type(boolean), value_bool(value)
+{
+}
+
+CL_NetGameEventValue::CL_NetGameEventValue(const DataBuffer &value)
+: type(binary), value_binary(value)
 {
 }
 
@@ -132,6 +134,11 @@ bool CL_NetGameEventValue::is_string() const
 bool CL_NetGameEventValue::is_boolean() const
 {
 	return type == boolean;
+}
+
+bool CL_NetGameEventValue::is_binary() const
+{
+	return type == binary;
 }
 
 bool CL_NetGameEventValue::is_complex() const
@@ -223,4 +230,14 @@ bool CL_NetGameEventValue::to_boolean() const
 		return value_bool;
 	else
 		throw CL_Exception("CL_NetGameEventValue is not a boolean");
+}
+
+CL_DataBuffer CL_NetGameEventValue::to_binary() const
+{
+	if (is_binary())
+		return value_binary;
+	else
+		throw CL_Exception("CL_NetGameEventValue is not a binary");
+}
+
 }

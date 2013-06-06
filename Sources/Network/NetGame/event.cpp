@@ -1,6 +1,6 @@
 /*
 **  ClanLib SDK
-**  Copyright (c) 1997-2011 The ClanLib Team
+**  Copyright (c) 1997-2013 The ClanLib Team
 **
 **  This software is provided 'as-is', without any express or implied
 **  warranty.  In no event will the authors be held liable for any damages
@@ -120,6 +120,10 @@ CL_String CL_NetGameEvent::to_string(const CL_NetGameEventValue &v) const
 		return CL_StringHelp::int_to_text(v.to_integer());
 	case CL_NetGameEventValue::uinteger:
 		return CL_StringHelp::uint_to_text(v.to_uinteger());
+	case CL_NetGameEventValue::character:
+		return CL_StringHelp::int_to_text(static_cast<int>(v.to_character()));
+	case CL_NetGameEventValue::ucharacter:
+		return CL_StringHelp::uint_to_text(static_cast<unsigned int>(v.to_ucharacter()));
 	case CL_NetGameEventValue::string:
 		return "\"" + v.to_string() + "\"";
 	case CL_NetGameEventValue::boolean:
