@@ -73,7 +73,7 @@ CL_NetGameEventValue::CL_NetGameEventValue(const CL_StringRef &value)
 CL_NetGameEventValue::CL_NetGameEventValue(const wchar_t *value)
 : type(string)
 {
-	value_string = StringHelp::ucs2_to_utf8(value);
+	value_string = CL_StringHelp::ucs2_to_utf8(value);
 }
 
 CL_NetGameEventValue::CL_NetGameEventValue(bool value)
@@ -81,7 +81,7 @@ CL_NetGameEventValue::CL_NetGameEventValue(bool value)
 {
 }
 
-CL_NetGameEventValue::CL_NetGameEventValue(const DataBuffer &value)
+CL_NetGameEventValue::CL_NetGameEventValue(const CL_DataBuffer &value)
 : type(binary), value_binary(value)
 {
 }
@@ -238,6 +238,4 @@ CL_DataBuffer CL_NetGameEventValue::to_binary() const
 		return value_binary;
 	else
 		throw CL_Exception("CL_NetGameEventValue is not a binary");
-}
-
 }

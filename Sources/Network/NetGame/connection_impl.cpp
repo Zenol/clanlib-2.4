@@ -172,7 +172,7 @@ void CL_NetGameConnection_Impl::connection_main()
 				{
 					int bytes = connection.write(send_buffer.get_data() + bytes_sent, send_buffer.get_size() - bytes_sent, false);
 					if (bytes < 0)
-						throw Exception("TCPConnection.write failed");
+						throw CL_Exception("TCPConnection.write failed");
 					bytes_sent += bytes;
 				}
 
@@ -195,7 +195,7 @@ void CL_NetGameConnection_Impl::connection_main()
 
 		site->add_network_event(CL_NetGameNetworkEvent(base, CL_NetGameNetworkEvent::client_disconnected));
 	}
-	catch (const Exception& e)
+	catch (const CL_Exception& e)
 	{
 		site->add_network_event(CL_NetGameNetworkEvent(base, CL_NetGameNetworkEvent::client_disconnected, CL_NetGameEvent(e.message)));
 	}

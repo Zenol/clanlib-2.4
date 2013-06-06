@@ -44,7 +44,7 @@ CL_NetGameEvent CL_NetGameNetworkData::receive_data(const void *data, int size, 
 		if (size >= 2 + payload_size)
 		{
 			out_bytes_consumed = 2 + payload_size;
-			DataBuffer buffer(static_cast<const char*>(data) + 2, payload_size);
+			CL_DataBuffer buffer(static_cast<const char*>(data) + 2, payload_size);
 			return decode_event(buffer);
 		}
 	}
@@ -53,7 +53,7 @@ CL_NetGameEvent CL_NetGameNetworkData::receive_data(const void *data, int size, 
 	return CL_NetGameEvent(std::string());
 }
 
-DataBuffer CL_NetGameNetworkData::send_data(const CL_NetGameEvent &e)
+CL_DataBuffer CL_NetGameNetworkData::send_data(const CL_NetGameEvent &e)
 {
 	CL_DataBuffer buffer = encode_event(e);
 	if (buffer.get_size() > packet_limit + 2)
@@ -171,7 +171,7 @@ CL_NetGameEventValue CL_NetGameNetworkData::decode_value(unsigned char type, con
 			pos += 2;
 			if (pos + binary_length > length)
 				throw CL_Exception("Invalid network data");
-			DataBuffer value(reinterpret_cast<const char*>(d + pos), binary_length);
+			CL_DataBuffer value(reinterpret_cast<const char*>(d + pos), binary_length);
 			pos += binary_length;
 			return CL_NetGameEventValue(value);
 		}

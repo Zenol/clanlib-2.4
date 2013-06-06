@@ -32,6 +32,7 @@
 #pragma once
 
 #include "../api_network.h"
+#include "../../Core/System/databuffer.h"
 
 /// \brief CL_NetGameEventValue
 ///
@@ -49,7 +50,8 @@ public:
 		string,
 		boolean,
 		number,
-		complex
+		complex,
+		binary
 	};
 
 	CL_NetGameEventValue();
@@ -102,6 +104,11 @@ public:
 
 	/// \brief Constructs a NetGameEventValue
 	///
+	/// \param str = DataBuffer
+	explicit CL_NetGameEventValue(const CL_DataBuffer &value);
+
+	/// \brief Constructs a NetGameEventValue
+	///
 	/// \param type = Type
 	CL_NetGameEventValue(Type type);
 
@@ -150,6 +157,11 @@ public:
 	/// \return true = boolean
 	bool is_boolean() const;
 
+	/// \brief Is Binary
+	///
+	/// \return true = binary
+	bool is_binary() const;
+
 	/// \brief Is Complex
 	///
 	/// \return true = complex
@@ -169,6 +181,9 @@ public:
 	/// \param value = Net Game Event Value
 	void set_member(unsigned int index, const CL_NetGameEventValue &value);
 
+	/// \brief To unsigned integer
+	///
+	/// \return unsigned int
 	unsigned int to_uinteger() const;
 
 	/// \brief To integer
@@ -201,6 +216,11 @@ public:
 	/// \return bool
 	bool to_boolean() const;
 
+	/// \brief To binary
+	///
+	/// \return binary
+	CL_DataBuffer to_binary() const;
+
 	inline operator unsigned int() const { return to_uinteger(); }
 	inline operator int() const { return to_integer(); }
 	inline operator unsigned char() const { return to_ucharacter(); }
@@ -225,6 +245,7 @@ private:
 		bool value_bool;
 	};
 	CL_String value_string;
+	CL_DataBuffer value_binary;
 	std::vector<CL_NetGameEventValue> value_complex;
 };
 

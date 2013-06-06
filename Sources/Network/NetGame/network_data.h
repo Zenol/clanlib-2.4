@@ -38,8 +38,9 @@ class CL_DomElement;
 class CL_NetGameNetworkData
 {
 public:
-	static CL_NetGameEvent receive_data(CL_TCPConnection connection);
-	static void send_data(CL_TCPConnection connection, const CL_NetGameEvent &e);
+	static CL_NetGameEvent receive_data(const void *data, int size, int &out_bytes_consumed);;
+	static CL_DataBuffer send_data(const CL_NetGameEvent &e);
+
 
 private:
 	static CL_NetGameEvent decode_event(const CL_DataBuffer &data);

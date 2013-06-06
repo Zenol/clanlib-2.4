@@ -26,38 +26,32 @@
 **    Magnus Norddahl
 */
 
+/// \addtogroup clanCore_I_O_Data clanCore I/O Data
+/// \{
+
 #pragma once
 
-#include "API/Network/NetGame/event.h"
+class CL_DataBuffer;
 
-class CL_NetGameConnection;
-
-class CL_NetGameNetworkEvent
+/// \brief Deflate compressor
+class CL_ZLibCompression
 {
+/// \name Operations
+/// \{
 public:
-	enum Type
-	{
-		client_connected,
-		event_received,
-		client_disconnected
-	};
+	// \brief Compress data
+	// \param data Data to compress
+	// \param window_bits Sliding window size
+	// \param raw Skips header if true
+	// \param compression_level Compression level in range 0-9. 0 = no compression, 1 = best speed, 6 = default, 9 = best compression.
+	static CL_DataBuffer compress(const CL_DataBuffer &data, int window_bits = 15, bool raw = true, int compression_level = 6);
 
-	CL_NetGameNetworkEvent(CL_NetGameConnection *connection, Type type)
-	: connection(connection), type(type), game_event(CL_String())
-	{
-	}
-
-	CL_NetGameNetworkEvent(CL_NetGameConnection *connection, Type type, const CL_NetGameEvent &game_event)
-	: connection(connection), type(type), game_event(game_event)
-	{
-	}
-
-	CL_NetGameNetworkEvent(CL_NetGameConnection *connection, const CL_NetGameEvent &game_event)
-	: connection(connection), type(event_received), game_event(game_event)
-	{
-	}
-
-	CL_NetGameConnection *connection;
-	Type type;
-	CL_NetGameEvent game_event;
+	// \brief Decompress data
+	// \param data Data to compress
+	// \param window_bits Sliding window size
+	// \param raw Skips header if true
+	static CL_DataBuffer decompress(const CL_DataBuffer &data, int window_bits = 15, bool raw = true);
+/// \}
 };
+
+/// \}
