@@ -70,6 +70,12 @@ CL_NetGameEventValue::CL_NetGameEventValue(const CL_StringRef &value)
 {
 }
 
+CL_NetGameEventValue::CL_NetGameEventValue(const char *value)
+    : type(string), value_string(value)
+{
+	value_string = CL_StringHelp::ucs2_to_utf8(value);
+}
+
 CL_NetGameEventValue::CL_NetGameEventValue(const wchar_t *value)
 : type(string)
 {
