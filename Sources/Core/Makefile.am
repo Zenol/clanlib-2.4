@@ -35,6 +35,7 @@ IOData/virtual_directory_listing_entry.cpp \
 IOData/virtual_file_source_file.cpp \
 IOData/virtual_file_source_zip.cpp \
 IOData/virtual_file_system.cpp \
+Zip/zlib_compression.cpp \
 Zip/zip_64_end_of_central_directory_locator.cpp \
 Zip/zip_64_end_of_central_directory_record.cpp \
 Zip/zip_archive.cpp \
