@@ -26,58 +26,32 @@
 **    Jeremy Cochoy
 */
 
-/// \addtogroup clanPgsql_System clanPgsql System
-/// \{
+#include "Pgsql/precomp.h"
+#include "API/Pgsql/pgsql_connection.h"
+#include "pgsql_connection_provider.h"
 
-#pragma once
+/////////////////////////////////////////////////////////////////////////////
+// CL_PgsqlConnection Construction:
 
-#include "api_pgsql.h"
-#include "../Database/db_connection.h"
-
-/// \brief Sqlite database connection.
-///
-/// \xmlonly !group=Sqlite/System! !header=sqlite.h! \endxmlonly
-class CL_API_PGSQL CL_PgsqlConnection : public CL_DBConnection
+CL_PgsqlConnection::CL_PgsqlConnection(const CL_PgsqlConnection::Parameters &parameters)
+: CL_DBConnection(new CL_PgsqlConnectionProvider(parameters))
 {
-/// \name Construction
-/// \{
+}
 
-public:
+CL_PgsqlConnection::CL_PgsqlConnection(const CL_String &connection_string)
+: CL_DBConnection(new CL_PgsqlConnectionProvider(connection_string))
+{
+}
 
-	typedef std::vector<std::pair<CL_String, CL_String>> Parameters;
+CL_PgsqlConnection::~CL_PgsqlConnection()
+{
+}
 
-	/// \brief Constructs a PgsqlConnection
-	///
-	/// \param parameters = List of std::paire<Key, Value>
-	CL_PgsqlConnection(const Parameters &parameters);
+/////////////////////////////////////////////////////////////////////////////
+// CL_DBConnection Attributes:
 
-	/// \brief Constructs a PgsqlConnection
-	///
-	/// \param connection_string = Parameters as a string.
-	///        If empty, default parameters are used.
-	///        It could be a connection uri. (see libpq-connect documentation)
-	CL_PgsqlConnection(const CL_String &connecton_tring);
+/////////////////////////////////////////////////////////////////////////////
+// CL_DBConnection Operations:
 
-	~CL_PgsqlConnection();
-
-/// \}
-/// \name Attributes
-/// \{
-
-public:
-
-/// \}
-/// \name Operations
-/// \{
-
-public:
-
-/// \}
-/// \name Implementation
-/// \{
-
-private:
-/// \}
-};
-
-/// \}
+/////////////////////////////////////////////////////////////////////////////
+// CL_DBConnection Implementation:

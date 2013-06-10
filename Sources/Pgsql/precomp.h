@@ -26,58 +26,40 @@
 **    Jeremy Cochoy
 */
 
-/// \addtogroup clanPgsql_System clanPgsql System
-/// \{
-
 #pragma once
 
-#include "api_pgsql.h"
-#include "../Database/db_connection.h"
 
-/// \brief Sqlite database connection.
-///
-/// \xmlonly !group=Sqlite/System! !header=sqlite.h! \endxmlonly
-class CL_API_PGSQL CL_PgsqlConnection : public CL_DBConnection
-{
-/// \name Construction
-/// \{
+#ifdef WIN32
+#ifdef _MSC_VER
+# pragma warning (disable:4786)
+#endif
+#endif
 
-public:
+#include <libpq-fe.h>
 
-	typedef std::vector<std::pair<CL_String, CL_String>> Parameters;
+#include "API/Core/Text/string_types.h"
+#include "API/Core/System/exception.h"
+#include "API/Core/System/sharedptr.h"
 
-	/// \brief Constructs a PgsqlConnection
-	///
-	/// \param parameters = List of std::paire<Key, Value>
-	CL_PgsqlConnection(const Parameters &parameters);
+#ifdef __BORLANDC__
+#define BAD_MATH
+#endif
 
-	/// \brief Constructs a PgsqlConnection
-	///
-	/// \param connection_string = Parameters as a string.
-	///        If empty, default parameters are used.
-	///        It could be a connection uri. (see libpq-connect documentation)
-	CL_PgsqlConnection(const CL_String &connecton_tring);
+#ifdef BAD_MATH
+#define sqrtf sqrt
+#define acosf acos
+#define sinf sin
+#define cosf cos
+#endif
 
-	~CL_PgsqlConnection();
+#if defined(_DEBUG) && !defined(DEBUG)
+#define DEBUG
+#endif
 
-/// \}
-/// \name Attributes
-/// \{
+#ifdef WIN32
+#define BREAKPOINT
+#else
+#define BREAKPOINT asm("int $03");
+#endif
 
-public:
 
-/// \}
-/// \name Operations
-/// \{
-
-public:
-
-/// \}
-/// \name Implementation
-/// \{
-
-private:
-/// \}
-};
-
-/// \}
