@@ -565,6 +565,11 @@ clanSqlite_includes = \
 	Sqlite/api_sqlite.h \
 	Sqlite/sqlite_connection.h
 
+clanPgsql_includes = \
+	pgsql.h \
+	Pgsql/api_pgsql.h \
+	Pgsql/pgsql_connection.h
+
 clanSWRender_includes = \
 	swrender.h \
 	SWRender/pixel_command.h \
@@ -596,6 +601,7 @@ EXTRA_HEADERS = \
 	$(clanVorbis_includes) \
 	$(clanDatabase_includes) \
 	$(clanSqlite_includes) \
+	$(clanPgsql_includes) \
 	$(clanRegExp_includes)
 
 # EOF #
