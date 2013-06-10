@@ -16,6 +16,7 @@ DIST_SUBDIRS = \
   RegExp         \
   Sound          \
   Sqlite         \
+  Pgsql          \
   Vorbis
 
 # EOF #

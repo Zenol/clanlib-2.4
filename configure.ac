@@ -160,6 +160,7 @@ if test "$WIN32" = "yes"; then
 	extra_LIBS_clanVorbis="-lvorbis -logg"
 	extra_LIBS_clanNetwork="-lws2_32"
 	extra_LIBS_clanSqlite="-lsqlite3"
+	extra_LIBS_clanPgsql="-lpq"
 	;;
 esac
 fi
@@ -326,6 +327,7 @@ CLANLIB_ARG_ENABLE(clanGL1,      auto, [Build clanGL1 module],        [whether w
 CLANLIB_ARG_ENABLE(clanSound,    auto, [Build clanSound module],      [whether we should try to build clanSound])
 CLANLIB_ARG_ENABLE(clanDatabase, auto, [Build clanDatabase module],   [whether we should try to build clanDatabase])
 CLANLIB_ARG_ENABLE(clanSqlite,   auto, [Build clanSqlite module],     [whether we should try to build clanSqlite])
+CLANLIB_ARG_ENABLE(clanPgsql,    auto, [Build clanPgsql module],      [whether we should try to build clanPgsql])
 CLANLIB_ARG_ENABLE(clanRegExp,   auto, [Build clanRegExp module],     [whether we should try to build clanRegExp])
 CLANLIB_ARG_ENABLE(clanNetwork,  auto, [Build clanNetwork module],    [whether we should try to build clanNetwork])
 CLANLIB_ARG_ENABLE(clanGUI,      auto, [Build clanGUI module],        [whether we should try to build clanGUI])
@@ -558,9 +560,22 @@ if test "$enable_clanSqlite" != "no"; then
 	echo ""
 fi
 
+if test "$enable_clanPgsql" != "no"; then
+	echo "Checking for clanPgsql stuff"
+	echo "==============================="
+	CLANLIB_CHECK_LIB(postgresql, [`cat $srcdir/Setup/Tests/postgresql.cpp`], clanSqlite, [ *** Cannot find libpq (See: http://www.sqlite.org/ ) (Try  postgresql-libs) ], [-lpq -ldl])
+	echo ""
+fi
+
 if test "$enable_clanSqlite" != "no"; then
 	enable_clanDatabase=yes
 	enable_clanSqlite=yes
+fi
+
+
+if test "$enable_clanSqlite" != "no"; then
+	enable_clanDatabase=yes
+	enable_clanPgsql=yes
 fi
 
 if test "$enable_clanRegExp" != "no"; then
@@ -621,6 +636,7 @@ AC_SUBST(extra_CFLAGS_clanSWRender)
 AC_SUBST(extra_CFLAGS_clanSound)
 AC_SUBST(extra_CFLAGS_clanDatabase)
 AC_SUBST(extra_CFLAGS_clanSqlite)
+AC_SUBST(extra_CFLAGS_clanPgsql)
 AC_SUBST(extra_CFLAGS_clanRegExp)
 AC_SUBST(extra_CFLAGS_clanNetwork)
 AC_SUBST(extra_CFLAGS_clanVorbis)
@@ -641,6 +657,7 @@ AC_SUBST(extra_LIBS_clanSWRender)
 AC_SUBST(extra_LIBS_clanSound)
 AC_SUBST(extra_LIBS_clanDatabase)
 AC_SUBST(extra_LIBS_clanSqlite)
+AC_SUBST(extra_LIBS_clanPgsql)
 AC_SUBST(extra_LIBS_clanRegExp)
 AC_SUBST(extra_LIBS_clanNetwork)
 AC_SUBST(extra_LIBS_clanVorbis)
@@ -679,6 +696,10 @@ fi
 
 if test "$enable_clanSqlite" = "yes"; then
 	CLANLIB_ENABLE_MODULES(Sqlite)
+fi
+
+if test "$enable_clanPgsql" = "yes"; then
+	CLANLIB_ENABLE_MODULES(Pgsql)
 fi
 
 if test "$enable_clanRegExp" = "yes"; then
@@ -870,6 +891,7 @@ echo "                    clanApp = yes"
 echo "               clanDatabase = $enable_clanDatabase"
 echo "                 clanRegExp = $enable_clanRegExp"
 echo "                 clanSqlite = $enable_clanSqlite"
+echo "                  clanPgsql = $enable_clanPgsql"
 echo "                    clanGUI = $enable_clanGUI"
 echo "              clanCSSLayout = $enable_clanCSSLayout"
 
