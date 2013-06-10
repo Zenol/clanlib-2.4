@@ -28,9 +28,9 @@
 
 #include "Pgsql/precomp.h"
 #include "pgsql_connection_provider.h"
-//#include "Pgsql_command_provider.h"
-//#include "Pgsql_reader_provider.h"
-//#include "Pgsql_transaction_provider.h"
+//#include "pgsql_command_provider.h"
+#include "pgsql_reader_provider.h"
+#include "pgsql_transaction_provider.h"
 #include "API/Core/System/databuffer.h"
 #include "API/Core/System/datetime.h"
 #include "API/Core/System/uniqueptr.h"
@@ -78,12 +78,10 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const CL_String &connecti
 
 CL_PgsqlConnectionProvider::~CL_PgsqlConnectionProvider()
 {
-/*
 	if (active_reader)
 		active_reader->connection = 0;
 	if (active_transaction)
 		active_transaction->connection = 0;
-*/
 	PQfinish(db);
 }
 
