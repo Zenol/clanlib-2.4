@@ -87,6 +87,8 @@ private:
 	PGresult *result;
 	ResultType type;
 	bool closed;
+	int current_row;
+	int nb_rows;
 
 	friend class CL_PgsqlConnectionProvider;
 	friend class CL_PgsqlCommandProvider;
