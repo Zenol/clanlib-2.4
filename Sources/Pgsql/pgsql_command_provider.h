@@ -37,6 +37,7 @@
 
 #include <libpq-fe.h>
 #include "API/Database/db_command_provider.h"
+#include "API/Core/System/uniqueptr.h"
 #include "API/Core/System/databuffer.h"
 
 class CL_PgsqlConnectionProvider;
@@ -84,6 +85,8 @@ private:
 	int arguments_count;
 	std::vector<CL_String> arguments;
 	std::map<int, CL_DataBuffer> bin_arguments;
+
+	PGresult *exec_command();
 
 	friend class CL_PgsqlReaderProvider;
 /// \}

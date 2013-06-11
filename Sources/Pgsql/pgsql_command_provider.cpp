@@ -27,7 +27,7 @@
 */
 
 #include "Pgsql/precomp.h"
-#include "Pgsql/pg_type.h"
+#include "pg_type.h"
 #include "pgsql_command_provider.h"
 #include "pgsql_connection_provider.h"
 #include "pgsql_reader_provider.h"
@@ -131,4 +131,49 @@ CL_String CL_PgsqlCommandProvider::compute_command(CL_String text, int &argument
 	}
 	arguments_count = arguments;
 	return CL_String(oss.str());
+}
+
+PGresult *CL_PgsqlCommandProvider::exec_command()
+{
+	CL_UniquePtr<const char*[]> values(new const char*[arguments_count + 1]);
+	CL_UniquePtr<Oid[]>  types(new Oid[arguments_count + 1]);
+	CL_UniquePtr<int[]>  formats(new int[arguments_count + 1]);
+	CL_UniquePtr<int[]>  lengths(new int[arguments_count + 1]);
+
+	for (int i = 0; i < arguments_count; i++)
+	{
+		if (arguments[i].empty())
+		{
+			values[i] = arguments[i].c_str(); //The value as string
+			types[i] = NULLOID; //Default type
+			formats[i] = 0; //It's a text string
+			lengths[i] = 0; //Let libpq calculate the string length
+		}
+		else
+		{
+			if (bin_arguments.find(i) != bin_arguments.end())
+			{
+				values[i] = bin_arguments[i].get_data();
+				types[i] = BYTEAOID; //Default type
+				formats[i] = 1; //It's a binary string
+				lengths[i] = bin_arguments[i].get_size();
+			}
+			else
+			{
+				values[i] = 0;
+				types[i] = NULLOID;
+				formats[i] = 0;
+				lengths[i] = 0; //Let libpq calculate the string length
+			}
+		}
+	}
+
+	return PQexecParams(connection->db,
+			text.c_str(),
+			arguments_count,
+			types.get(),
+			values.get(),
+			lengths.get(),
+			formats.get(),
+			0); //Text output format
 }

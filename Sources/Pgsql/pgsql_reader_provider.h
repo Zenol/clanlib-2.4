@@ -76,11 +76,17 @@ public:
 /// \name Implementation
 /// \{
 private:
+	enum class ResultType
+	{
+		EMPTY_RESULT,
+		TUPLES_RESULT
+	};
+
 	CL_PgsqlConnectionProvider *connection;
 	CL_PgsqlCommandProvider *command;
-	bool finished;
+	PGresult *result;
+	ResultType type;
 	bool closed;
-	bool destroy_command;
 
 	friend class CL_PgsqlConnectionProvider;
 	friend class CL_PgsqlCommandProvider;

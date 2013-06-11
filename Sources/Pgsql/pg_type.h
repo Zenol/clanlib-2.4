@@ -15,6 +15,7 @@
 #ifndef PG_TYPE_H
 #define PG_TYPE_H
 
+#define NULLOID        0
 #define BOOLOID        16
 #define BYTEAOID       17
 #define CHAROID        18
