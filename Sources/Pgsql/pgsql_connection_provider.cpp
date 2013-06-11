@@ -28,7 +28,7 @@
 
 #include "Pgsql/precomp.h"
 #include "pgsql_connection_provider.h"
-//#include "pgsql_command_provider.h"
+#include "pgsql_command_provider.h"
 #include "pgsql_reader_provider.h"
 #include "pgsql_transaction_provider.h"
 #include "API/Core/System/databuffer.h"
@@ -43,11 +43,11 @@
 // CL_PgsqlConnectionProvider Construction:
 
 CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const Parameters &parameters)
-: active_transaction(0), active_reader(0), db(0)
+: db(0)
 {
 	const int length = parameters.size() + 1;
-	std::unique_ptr<const char*[]> keywords(new const char*[length]);
-	std::unique_ptr<const char*[]> values(new const char*[length]);
+	CL_UniquePtr<const char*[]> keywords(new const char*[length]);
+	CL_UniquePtr<const char*[]> values(new const char*[length]);
 
 	for (int i = 0; i < length; i++)
 	{
@@ -66,7 +66,7 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const Parameters &paramet
 }
 
 CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const CL_String &connection_string)
-: active_transaction(0), active_reader(0), db(0)
+: db(0)
 {
 	db = PQconnectdb(connection_string.c_str());
 	if (PQstatus(db) == CONNECTION_BAD)
@@ -78,10 +78,6 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const CL_String &connecti
 
 CL_PgsqlConnectionProvider::~CL_PgsqlConnectionProvider()
 {
-	if (active_reader)
-		active_reader->connection = 0;
-	if (active_transaction)
-		active_transaction->connection = 0;
 	PQfinish(db);
 }
 
@@ -91,29 +87,23 @@ CL_PgsqlConnectionProvider::~CL_PgsqlConnectionProvider()
 
 /////////////////////////////////////////////////////////////////////////////
 // CL_PgsqlConnectionProvider Operations:
-/*
+
 CL_DBCommandProvider *CL_PgsqlConnectionProvider::create_command(const CL_StringRef &text, CL_DBCommand::Type type)
 {
 	if (type != CL_DBCommand::sql_statement)
-		throw CL_Exception("Pgsql database connections only support SQL statement commands");
+		throw CL_Exception("DBCommand not yet implemented");
 	else
 		return new CL_PgsqlCommandProvider(this, text);
 }
 
 CL_DBTransactionProvider *CL_PgsqlConnectionProvider::begin_transaction(CL_DBTransaction::Type type)
 {
-	if (active_transaction)
-		throw CL_Exception("Only one database transaction may be active for a connection");
-	else
-		return new CL_PgsqlTransactionProvider(this, type);
+	throw CL_Exception("Transactions not yet implemented");
 }
 
 CL_DBReaderProvider *CL_PgsqlConnectionProvider::execute_reader(CL_DBCommandProvider *command)
 {
-	if (active_reader)
-		throw CL_Exception("Only one database reader may be active for a connection");
-	else
-		return new CL_PgsqlReaderProvider(this, dynamic_cast<CL_PgsqlCommandProvider*>(command));
+	return new CL_PgsqlReaderProvider(this, dynamic_cast<CL_PgsqlCommandProvider*>(command));
 }
 
 CL_String CL_PgsqlConnectionProvider::execute_scalar_string(CL_DBCommandProvider *command)
@@ -155,15 +145,3 @@ CL_DateTime CL_PgsqlConnectionProvider::from_sql_datetime(const CL_String &value
 {
 	return CL_DateTime::from_short_date_string(value);
 }
-
-CL_String CL_PgsqlConnectionProvider::int_to_string(int value, int length)
-{
-	CL_String str = CL_StringHelp::int_to_text(value);
-	return CL_String(length-str.length(), L'0') + str;
-}
-
-int CL_PgsqlConnectionProvider::string_to_int(const CL_String &str, int offset, int length)
-{
-	return CL_StringHelp::text_to_int(str.substr(offset, length));
-}
-*/

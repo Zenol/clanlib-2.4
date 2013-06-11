@@ -34,52 +34,48 @@
 
 
 #include <libpq-fe.h>
-#include "API/Pgsql/pgsql_connection.h"
-#include "API/Database/db_connection_provider.h"
+#include "API/Database/db_command_provider.h"
 
-class CL_PgsqlTransactionProvider;
-class CL_PgsqlReaderProvider;
+class CL_PgsqlConnectionProvider;
 
-/// \brief Sqlite database connection provider
-class CL_PgsqlConnectionProvider : public CL_DBConnectionProvider
+/// \brief Pgsql database command provider.
+class CL_PgsqlCommandProvider : public CL_DBCommandProvider
 {
 /// \name Construction
 /// \{
 public:
-	typedef CL_PgsqlConnection::Parameters Parameters;
-
-	CL_PgsqlConnectionProvider(const Parameters &parameters);
-	CL_PgsqlConnectionProvider(const CL_String &connecton_tring);
-	~CL_PgsqlConnectionProvider();
+	CL_PgsqlCommandProvider(CL_PgsqlConnectionProvider *connection, const CL_StringRef &text);
+	~CL_PgsqlCommandProvider();
 /// \}
 
 /// \name Attributes
 /// \{
 public:
+	int get_input_parameter_column(const CL_StringRef &name) const;
+	int get_output_last_insert_rowid() const;
 /// \}
 
 /// \name Operations
 /// \{
 public:
-	CL_DBCommandProvider *create_command(const CL_StringRef &text, CL_DBCommand::Type type);
-	CL_DBTransactionProvider *begin_transaction(CL_DBTransaction::Type type);
-	CL_DBReaderProvider *execute_reader(CL_DBCommandProvider *command);
-	CL_String execute_scalar_string(CL_DBCommandProvider *command);
-	int execute_scalar_int(CL_DBCommandProvider *command);
-	void execute_non_query(CL_DBCommandProvider *command);
+	void set_input_parameter_string(int index, const CL_StringRef &value);
+	void set_input_parameter_bool(int index, bool value);
+	void set_input_parameter_int(int index, int value);
+	void set_input_parameter_double(int index, double value);
+	void set_input_parameter_datetime(int index, const CL_DateTime &value);
+	void set_input_parameter_binary(int index, const CL_DataBuffer &value);
 /// \}
 
 /// \name Implementation
 /// \{
 private:
-	static CL_String to_sql_datetime(const CL_DateTime &value);
-	static CL_DateTime from_sql_datetime(const CL_String &value);
+	void throw_if_failed(int result) const;
 
-	PGconn *db;
+	CL_PgsqlConnectionProvider *connection;
+	CL_String text;
+	int last_insert_rowid;
 
 	friend class CL_PgsqlReaderProvider;
-	friend class CL_PgsqlTransactionProvider;
-	friend class CL_PgsqlCommandProvider;
 /// \}
 };
 
