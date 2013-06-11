@@ -146,36 +146,17 @@ CL_DateTime CL_PgsqlReaderProvider::get_column_datetime(int index) const
 	return CL_PgsqlConnectionProvider::from_sql_datetime(get_column_string(index));
 }
 
-template <class T>
-class __free_on_return
-{
-public:
-	__free_on_return(T *)
-      :ptr(ptr)
-	{
-	}
-	inline T *get()
-	{
-		return ptr;
-	}
-	~__free_on_return()
-	{
-		free(ptr);
-	}
-private:
-	T *ptr;
-};
-
 CL_DataBuffer CL_PgsqlReaderProvider::get_column_binary(int index) const
 {
 	const unsigned char *const str = reinterpret_cast<unsigned char*>(PQgetvalue(result, current_row, index));
 	if (str == nullptr)
 		throw ("Index out of range");
 	size_t length;
-	__free_on_return<unsigned char> value(PQunescapeBytea(
+	auto deleter = [](void *ptr) {if (ptr) {free(ptr);} };
+	CL_UniquePtr<unsigned char, decltype(deleter)> value(PQunescapeBytea(
 				str,
-				&length));
-
+				&length),
+				deleter);
 	CL_DataBuffer output(value.get(), length);
 	return output;
 }
