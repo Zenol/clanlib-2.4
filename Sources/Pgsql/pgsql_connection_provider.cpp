@@ -49,13 +49,15 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const Parameters &paramet
 	CL_UniquePtr<const char*[]> keywords(new const char*[length]);
 	CL_UniquePtr<const char*[]> values(new const char*[length]);
 
-	for (int i = 0; i < length; i++)
+  int i = 0;
+  for (auto pair : parameters)
 	{
-		keywords[i] = parameters[i].first.c_str();
-		values[i] = parameters[i].second.c_str();
+		keywords[i] = pair.first.c_str();
+		values[i] = pair.second.c_str();
+		i++;
 	}
-	keywords[length] = nullptr;
-	values[length] = nullptr;
+	keywords[i] = nullptr;
+	values[i] = nullptr;
 
 	db = PQconnectdbParams(keywords.get(), values.get(), 0);
 	if (PQstatus(db) == CONNECTION_BAD)
@@ -91,7 +93,7 @@ CL_PgsqlConnectionProvider::~CL_PgsqlConnectionProvider()
 CL_DBCommandProvider *CL_PgsqlConnectionProvider::create_command(const CL_StringRef &text, CL_DBCommand::Type type)
 {
 	if (type != CL_DBCommand::sql_statement)
-		throw CL_Exception("DBCommand not yet implemented");
+		throw CL_Exception("DBCommand::sql_statement not yet implemented");
 	else
 		return new CL_PgsqlCommandProvider(this, text);
 }

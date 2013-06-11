@@ -32,9 +32,12 @@
 
 #pragma once
 
+#include <vector>
+#include <map>
 
 #include <libpq-fe.h>
 #include "API/Database/db_command_provider.h"
+#include "API/Core/System/databuffer.h"
 
 class CL_PgsqlConnectionProvider;
 
@@ -69,11 +72,18 @@ public:
 /// \name Implementation
 /// \{
 private:
-	void throw_if_failed(int result) const;
+	/// \brief Replace each '?' by a '$i' where i is the occurence of '?'.
+	CL_String compute_command(CL_String text, int &arguments_count) const;
+
+	inline void put(int index, const CL_DataBuffer &value);
+	inline void put(int index, const CL_String &value);
 
 	CL_PgsqlConnectionProvider *connection;
 	CL_String text;
 	int last_insert_rowid;
+	int arguments_count;
+	std::vector<CL_String> arguments;
+	std::map<int, CL_DataBuffer> bin_arguments;
 
 	friend class CL_PgsqlReaderProvider;
 /// \}

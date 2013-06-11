@@ -563,7 +563,7 @@ fi
 if test "$enable_clanPgsql" != "no"; then
 	echo "Checking for clanPgsql stuff"
 	echo "==============================="
-	CLANLIB_CHECK_LIB(postgresql, [`cat $srcdir/Setup/Tests/postgresql.cpp`], clanSqlite, [ *** Cannot find libpq (See: http://www.sqlite.org/ ) (Try  postgresql-libs) ], [-lpq -ldl])
+	CLANLIB_CHECK_LIB(postgresql, [`cat $srcdir/Setup/Tests/postgresql.cpp`], clanPgsql, [ *** Cannot find libpq (See: http://www.sqlite.org/ ) (Try postgresql-libs) ], [-lpq -ldl])
 	echo ""
 fi
 
@@ -573,7 +573,7 @@ if test "$enable_clanSqlite" != "no"; then
 fi
 
 
-if test "$enable_clanSqlite" != "no"; then
+if test "$enable_clanPgsql" != "no"; then
 	enable_clanDatabase=yes
 	enable_clanPgsql=yes
 fi

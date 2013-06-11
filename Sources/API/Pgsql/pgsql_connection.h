@@ -33,6 +33,7 @@
 
 #include "api_pgsql.h"
 #include "../Database/db_connection.h"
+#include <map>
 
 /// \brief Sqlite database connection.
 ///
@@ -44,7 +45,7 @@ class CL_API_PGSQL CL_PgsqlConnection : public CL_DBConnection
 
 public:
 
-	typedef std::vector<std::pair<CL_String, CL_String>> Parameters;
+	typedef std::map<CL_String, CL_String> Parameters;
 
 	/// \brief Constructs a PgsqlConnection
 	///
