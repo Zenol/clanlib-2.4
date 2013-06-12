@@ -67,7 +67,7 @@ CL_PgsqlTransactionProvider::~CL_PgsqlTransactionProvider()
 {
 	rollback();
 	if (connection)
-		connection->active_transaction = 0;
+		connection->active_transaction = nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////
