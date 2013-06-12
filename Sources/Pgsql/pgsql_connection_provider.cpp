@@ -43,7 +43,7 @@
 // CL_PgsqlConnectionProvider Construction:
 
 CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const Parameters &parameters)
-: db(0)
+: db(nullptr), active_transaction(nullptr)
 {
 	const int length = parameters.size() + 1;
 	CL_UniquePtr<const char*[]> keywords(new const char*[length]);
@@ -68,7 +68,7 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const Parameters &paramet
 }
 
 CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const CL_String &connection_string)
-: db(0)
+: db(nullptr), active_transaction(nullptr)
 {
 	db = PQconnectdb(connection_string.c_str());
 	if (PQstatus(db) == CONNECTION_BAD)
@@ -80,6 +80,8 @@ CL_PgsqlConnectionProvider::CL_PgsqlConnectionProvider(const CL_String &connecti
 
 CL_PgsqlConnectionProvider::~CL_PgsqlConnectionProvider()
 {
+	if (active_transaction)
+		active_transaction->rollback();
 	PQfinish(db);
 }
 
@@ -100,7 +102,7 @@ CL_DBCommandProvider *CL_PgsqlConnectionProvider::create_command(const CL_String
 
 CL_DBTransactionProvider *CL_PgsqlConnectionProvider::begin_transaction(CL_DBTransaction::Type type)
 {
-	throw CL_Exception("Transactions not yet implemented");
+	return new CL_PgsqlTransactionProvider(this, type);
 }
 
 CL_DBReaderProvider *CL_PgsqlConnectionProvider::execute_reader(CL_DBCommandProvider *command)
@@ -114,7 +116,6 @@ CL_String CL_PgsqlConnectionProvider::execute_scalar_string(CL_DBCommandProvider
 	if (!reader->retrieve_row())
 		throw CL_Exception("Database command statement returned no value");
 	CL_String value = reader->get_column_string(0);
-	reader->close();
 	return value;
 }
 
@@ -124,15 +125,12 @@ int CL_PgsqlConnectionProvider::execute_scalar_int(CL_DBCommandProvider *command
 	if (!reader->retrieve_row())
 		throw CL_Exception("Database command statement returned no value");
 	int value = reader->get_column_int(0);
-	reader->close();
 	return value;
 }
 
 void CL_PgsqlConnectionProvider::execute_non_query(CL_DBCommandProvider *command)
 {
 	CL_UniquePtr<CL_DBReaderProvider> reader(execute_reader(command));
-	reader->retrieve_row();
-	reader->close();
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -169,8 +169,9 @@ CL_DataBuffer CL_PgsqlReaderProvider::get_column_binary(int index) const
 
 bool CL_PgsqlReaderProvider::retrieve_row()
 {
-	if (++current_row >= nb_rows)
+	if (1 + current_row >= nb_rows)
 		return false;
+	++current_row;
 	return true;
 }
 

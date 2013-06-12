@@ -5,8 +5,8 @@ precomp.cpp \
 pgsql_connection.cpp \
 pgsql_connection_provider.cpp \
 pgsql_command_provider.cpp \
-pgsql_reader_provider.cpp
-#pgsql_transaction_provider.cpp
+pgsql_reader_provider.cpp \
+pgsql_transaction_provider.cpp
 
 libclan24Pgsql_la_LIBADD = -lpq
 

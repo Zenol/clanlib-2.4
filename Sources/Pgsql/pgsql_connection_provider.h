@@ -76,6 +76,7 @@ private:
 	static CL_DateTime from_sql_datetime(const CL_String &value);
 
 	PGconn *db;
+	CL_PgsqlTransactionProvider *active_transaction;
 
 	friend class CL_PgsqlReaderProvider;
 	friend class CL_PgsqlTransactionProvider;
