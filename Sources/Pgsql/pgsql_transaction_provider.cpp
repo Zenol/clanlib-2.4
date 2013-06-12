@@ -92,7 +92,7 @@ void CL_PgsqlTransactionProvider::rollback()
 	//We assert that (connection != nullptr) and (connection->active_transaction == this|nullptr)
 	if (connection->active_transaction)
 	{
-		execute("ROLLBACK");
+		execute("ROLLBACK;");
 		connection->active_transaction = nullptr;
 	}
 }

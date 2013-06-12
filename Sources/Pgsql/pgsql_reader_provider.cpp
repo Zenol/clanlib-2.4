@@ -43,8 +43,9 @@
 CL_PgsqlReaderProvider::CL_PgsqlReaderProvider(CL_PgsqlConnectionProvider *connection, CL_PgsqlCommandProvider *command)
     : connection(connection), command(command), closed(false), current_row(-1)
 {
-	//TODO : free result when exception are throwed. RAII.
-	result = command->exec_command();
+	auto deleter = [](PGresult *ptr) {if (ptr) {PQclear(ptr);} };
+	CL_UniquePtr<PGresult, decltype(deleter)> result_uniqueptr(command->exec_command(), deleter);
+	result = result_uniqueptr.get();
 
 	switch (PQresultStatus(result))
 	{
@@ -68,6 +69,7 @@ CL_PgsqlReaderProvider::CL_PgsqlReaderProvider(CL_PgsqlConnectionProvider *conne
 		throw CL_Exception(CL_StringHelp::text_to_local8(PQresultErrorMessage(result)));
 	}
 	nb_rows = PQntuples(result);
+	result_uniqueptr.release();
 }
 
 CL_PgsqlReaderProvider::~CL_PgsqlReaderProvider()
