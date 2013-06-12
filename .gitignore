@@ -6,6 +6,7 @@
 .dirstamp
 *.la
 *.pc
+!Setup/pkgconfig/*.pc.in
 
 aclocal.m4
 autom4te.cache/
