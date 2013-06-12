@@ -74,7 +74,7 @@ public:
 /// \{
 private:
 	/// \brief Replace each '?' by a '$i' where i is the occurence of '?'.
-	CL_String compute_command(CL_String text, int &arguments_count) const;
+	CL_String compute_command(const CL_String &text, int &arguments_count) const;
 
 	inline void put(int index, const CL_DataBuffer &value);
 	inline void put(int index, const CL_String &value);

@@ -105,32 +105,36 @@ void CL_PgsqlCommandProvider::put(int index, const CL_String &value)
 {
 	if (index > arguments_count)
 		throw CL_Exception("Index out of range");
-	arguments[index] = value;
+	arguments[index - 1] = value;
 	bin_arguments.erase(index);
 }
 
 inline
 void CL_PgsqlCommandProvider::put(int index, const CL_DataBuffer &value)
 {
-	if (index > arguments_count)
+	if (index < 1 || index > arguments_count)
 		throw CL_Exception("Index out of range");
-	arguments[index] = "";
-	bin_arguments[index] = value;
+	last_insert_rowid = index;
+	arguments[index - 1] = "";
+	bin_arguments[index - 1] = value;
 }
 
-CL_String CL_PgsqlCommandProvider::compute_command(CL_String text, int &arguments_count) const
+CL_String CL_PgsqlCommandProvider::compute_command(const CL_String &text, int &arguments_count) const
 {
-	std::ostringstream oss;
+	CL_String out;
 	int arguments = 0;
 	for (auto c : text)
 	{
 		if (c == '?')
-			oss << '$' << ++arguments;
+		{
+			out.push_back('$');
+			++arguments;
+		}
 		else
-			oss << c;
+			out.push_back(c);
 	}
 	arguments_count = arguments;
-	return CL_String(oss.str());
+	return out;
 }
 
 PGresult *CL_PgsqlCommandProvider::exec_command()
@@ -142,7 +146,7 @@ PGresult *CL_PgsqlCommandProvider::exec_command()
 
 	for (int i = 0; i < arguments_count; i++)
 	{
-		if (arguments[i].empty())
+		if (!arguments[i].empty())
 		{
 			values[i] = arguments[i].c_str(); //The value as string
 			types[i] = NULLOID; //Default type

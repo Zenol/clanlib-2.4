@@ -41,10 +41,11 @@
 // CL_PgsqlReaderProvider Construction:
 
 CL_PgsqlReaderProvider::CL_PgsqlReaderProvider(CL_PgsqlConnectionProvider *connection, CL_PgsqlCommandProvider *command)
-    : connection(connection), command(command), closed(false), current_row(0)
+    : connection(connection), command(command), closed(false), current_row(-1)
 {
 	//TODO : free result when exception are throwed. RAII.
 	result = command->exec_command();
+
 	switch (PQresultStatus(result))
 	{
 	case PGRES_EMPTY_QUERY:
@@ -52,19 +53,21 @@ CL_PgsqlReaderProvider::CL_PgsqlReaderProvider(CL_PgsqlConnectionProvider *conne
 
 	case PGRES_COMMAND_OK:
 		type = ResultType::EMPTY_RESULT;
+		break;
 	case PGRES_TUPLES_OK:
 		type = ResultType::TUPLES_RESULT;
+		break;
 
 	case PGRES_NONFATAL_ERROR:
 		throw CL_Exception("Server gave an unknow answer");
 
 	case PGRES_FATAL_ERROR:
-		throw CL_Exception("Fatal error");
+		throw CL_Exception(PQerrorMessage(connection->db));
 
 	default:
 		throw CL_Exception(CL_StringHelp::text_to_local8(PQresultErrorMessage(result)));
 	}
-	int nb_rows = PQntuples(result);
+	nb_rows = PQntuples(result);
 }
 
 CL_PgsqlReaderProvider::~CL_PgsqlReaderProvider()
