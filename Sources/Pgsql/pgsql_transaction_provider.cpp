@@ -100,6 +100,7 @@ void CL_PgsqlTransactionProvider::rollback()
 /////////////////////////////////////////////////////////////////////////////
 // CL_PgsqlTransactionProvider Implementation:
 
+inline
 void CL_PgsqlTransactionProvider::execute(const CL_String &cmd)
 {
 	CL_UniquePtr<CL_DBCommandProvider> command(

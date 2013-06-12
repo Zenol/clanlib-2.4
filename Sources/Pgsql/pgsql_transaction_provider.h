@@ -65,7 +65,7 @@ public:
 private:
 	CL_PgsqlConnectionProvider *connection;
 	CL_DBTransaction::Type type;
-	void execute(const CL_String &cmd);
+	inline void execute(const CL_String &cmd);
 
 	friend class CL_PgsqlConnectionProvider;
 /// \}
