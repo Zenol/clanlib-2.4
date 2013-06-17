@@ -140,11 +140,15 @@ void CL_InputDeviceProvider_X11Keyboard::received_keyboard_input(XKeyEvent &even
 		key.type = CL_InputEvent::released;
 	key.mouse_pos = window->get_mouse_position();
 
-	KeySym key_symbol = XKeycodeToKeysym(window->get_display(), key_code, 0);
+	KeySym key_symbol;
+	{
+		int keysyms_per_keycode_return;
+		key_symbol = *XGetKeyboardMapping(window->get_display(), key_code, 1, &keysyms_per_keycode_return);
+	}
 
 	bool keypressed = get_keycode(key_symbol);
 
-        // Add to repeat count                                                                                               
+        // Add to repeat count
         if(keydown && keypressed)
 	  {
 	    if( repeat_count.find(key_symbol) == repeat_count.end() )
