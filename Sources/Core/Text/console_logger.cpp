@@ -108,7 +108,7 @@ void CL_ConsoleLogger::log(const CL_StringRef &type, const CL_StringRef &text)
 	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), log_line.data(), log_line.size(), &bytesWritten, 0);
 #else
 	CL_String8 log_line = CL_StringHelp::text_to_local8(format.get_result());
-	write(1, log_line.data(), log_line.length());
+	ssize_t bytes = write(1, log_line.data(), log_line.length());
 #endif
 }
 
