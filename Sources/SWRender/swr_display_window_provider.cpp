@@ -39,7 +39,7 @@
 
 #ifdef WIN32
 #include "Display/Win32/cursor_provider_win32.h"
-#else if !defined(__APPLE__)
+#elif !defined(__APPLE__)
 #include "Display/X11/cursor_provider_x11.h"
 #endif
 
