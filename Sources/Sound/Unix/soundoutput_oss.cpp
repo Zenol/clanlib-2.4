@@ -168,7 +168,7 @@ void CL_SoundOutput_OSS::write_fragment(float *data)
 	}
 	
 
-	write(dev_dsp_fd, &buffer[0], frag_size);
+	ssize_t wlength = write(dev_dsp_fd, &buffer[0], frag_size);
 }
 
 void CL_SoundOutput_OSS::wait()
