@@ -1,4 +1,10 @@
+Unofficial
+----------
 This is an unofficial copy of clanLib 2.3 with PostgreSQL backend, ClanLib 3.0 's NetGame backported, and some 3.0 patches.
+
+
+You can check if the current HEAD is compiling by looking at the pretty logo : [![Build Status](https://drone.io/github.com/Zenol/clanlib-2.4/status.png)](https://drone.io/github.com/Zenol/clanlib-2.4/latest)
+
 
 Here begin the official readme :
 
@@ -43,5 +49,3 @@ Check out ClanLib homepage at:
 --
 Enjoy,
 The ClanLib development team
-
-[![Build Status](https://drone.io/github.com/Zenol/clanlib-2.4/status.png)](https://drone.io/github.com/Zenol/clanlib-2.4/latest)
