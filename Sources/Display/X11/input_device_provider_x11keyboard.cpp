@@ -34,6 +34,7 @@
 #include "API/Core/Text/string_help.h"
 #include "x11_window.h"
 #include <cstdio>
+#include <X11/XKBlib.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CL_InputDeviceProvider_X11Keyboard construction:
@@ -140,11 +141,7 @@ void CL_InputDeviceProvider_X11Keyboard::received_keyboard_input(XKeyEvent &even
 		key.type = CL_InputEvent::released;
 	key.mouse_pos = window->get_mouse_position();
 
-	KeySym key_symbol;
-	{
-		int keysyms_per_keycode_return;
-		key_symbol = *XGetKeyboardMapping(window->get_display(), key_code, 1, &keysyms_per_keycode_return);
-	}
+	KeySym key_symbol = XkbKeycodeToKeysym(window->get_display(), key_code, 0, 0);
 
 	bool keypressed = get_keycode(key_symbol);
 
